@@ -1,0 +1,22 @@
+motors:
+  R0:
+    offset: 0.30837726593
+    dir: -1
+  R1:
+    offset: -0.153398513794
+    dir: 1
+  L0:
+    offset: -0.343551635742
+    dir: -1
+  L1:
+    offset: -0.0488748550415
+    dir: 1
+linkages:
+  R0: -45
+  R1: 45
+  L0: 45
+  L1: -45
+geometry:
+  l1: 45
+  l2: 25
+  beta: 135

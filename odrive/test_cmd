@@ -1,0 +1,11 @@
+start_liveplotter(lambda: [odrv0.axis0.encoder.pos_estimate, odrv0.axis1.encoder.pos_estimate,odrv1.axis0.encoder.pos_estimate, odrv1.axis1.encoder.pos_estimate])
+
+odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+odrv0.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+odrv1.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+odrv1.axis1.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+
+odrv0.axis0.requested_state = AXIS_STATE_IDLE
+odrv0.axis1.requested_state = AXIS_STATE_IDLE
+odrv1.axis0.requested_state = AXIS_STATE_IDLE
+odrv1.axis1.requested_state = AXIS_STATE_IDLE
