@@ -12,15 +12,18 @@ from odrive.enums import *
 import yaml
 
 
-def arm(axis, gain = 250):
+def arm(axis, gain):
     axis.controller.config.input_mode = INPUT_MODE_POS_FILTER
     axis.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-    axis.controller.config.pos_gain = gain #250
+    axis.controller.config.pos_gain = gain
     axis.controller.config.vel_gain = 1
     axis.controller.config.input_filter_bandwidth = 100
 
 def disarm(axis):
     axis.requested_state = AXIS_STATE_IDLE
+
+def set_pos_gain(axis, pos_gain):
+    axis.controller.config.pos_gain = pos_gain 
 
 
 # def axis2ros(ax):
@@ -113,6 +116,12 @@ class DDGripper(object):
         disarm(self.finger_L.axis1)
         disarm(self.finger_R.axis0)
         disarm(self.finger_R.axis1)
+
+    def set_stiffness(self,gain):
+        set_pos_gain(self.finger_L.axis0, gain)
+        set_pos_gain(self.finger_L.axis1, gain)
+        set_pos_gain(self.finger_R.axis0, gain)
+        set_pos_gain(self.finger_R.axis1, gain)
 
     @property
     def motor_pos_r0(self):
