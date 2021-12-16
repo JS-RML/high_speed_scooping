@@ -54,7 +54,8 @@ class DDGripper(object):
     def __init__(self):
 
         print('reading gripper parameters...')
-        with open("../config/ddh_config.yaml", 'r') as stream:
+        config_file = "ddh_default.yaml"
+        with open("../config/"+config_file, 'r') as stream:
             try:
                 config = yaml.safe_load(stream)
             except yaml.YAMLError as exc:

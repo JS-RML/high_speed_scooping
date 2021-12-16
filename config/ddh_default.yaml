@@ -17,6 +17,8 @@ linkages:
   L0: 45
   L1: -45
 geometry:
-  l1: 45
-  l2: 25
-  beta: 135
+  l1: 45 # length of proximal links
+  l2: 25 # length of distal links
+  beta: 135 # angle from l2 to finger surface
+  l3: 58 # distance from distal joint to fingertip
+  gamma: 153 # angle from l2 to fingertip
