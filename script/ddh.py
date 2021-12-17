@@ -93,6 +93,8 @@ class DDGripper(object):
         self.geometry_beta = config['geometry']['beta']
         self.geometry_l3 = config['geometry']['l3']
         self.geometry_gamma = config['geometry']['gamma']
+        self.r_min = config['geometry']['r_min']
+        self.r_max = self.geometry_l1 + self.geometry_l2 - config['geometry']['r_max_offset']
 
         print('connecting to odrive...')
         self.finger_L = odrive.find_any(serial_number='207E39775453')
@@ -294,6 +296,29 @@ class DDGripper(object):
         cmd_a1, cmd_a2 = self.ik_left_a1_phi(a1, phi)
         self.set_left_a1_a2(cmd_a1, cmd_a2)
 
+    # ik of finger joint pos
+
+    def ik_finger_pos(self, pos):
+        x, y = pos
+        r = np.sqrt(x**2+y**2)
+        r = max(self.r_min,min(r, self.r_max))
+        a1 = rad2deg(np.arctan2(y,x))
+        a2 = rad2deg(np.arccos((self.geometry_l2**2-self.geometry_l1**2-r**2)/(-2*self.geometry_l1*r)))
+        return a1, a2
+
+    def set_left_finger_pos(self, pos):
+        cmd_a1, cmd_a2 = self.ik_finger_pos(pos)
+        self.set_left_a1_a2(cmd_a1, cmd_a2)
+
+    def set_right_finger_pos(self, pos):
+        cmd_a1, cmd_a2 = self.ik_finger_pos(pos)
+        self.set_right_a1_a2(cmd_a1, cmd_a2)
+
+    # ik of fingertip
+
+    # def ik_finger_tip(self, pos):
+    #     return pos
+
     # parallel jaw
 
     def set_parallel_jaw(self, angle, phi):
@@ -347,9 +372,13 @@ class DDGripper(object):
 if __name__ == "__main__":
     # rospy.init_node('ddh_driver_node')
     gripper = DDGripper()
-    # gripper.arm()
+    gripper.arm()
     # gripper.startup_dance()
-    while 1:
-        print(gripper.left_tip_pos)
+    gripper.set_left_finger_pos((50,0))
+    gripper.set_right_finger_pos((50,0))
+    # while 1:
+    #     print("=========================")
+    #     print(gripper.left_a1,gripper.left_a2)
+    #     print(gripper.ik_left_finger_pos(gripper.left_finger_pos))
 
     # rospy.spin()
