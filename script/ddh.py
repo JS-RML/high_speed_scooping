@@ -93,6 +93,11 @@ class DDGripper(object):
         self.geometry_beta = config['geometry']['beta']
         self.geometry_l3 = config['geometry']['l3']
         self.geometry_gamma = config['geometry']['gamma']
+        # virtual link formed by l2 and l3
+        self._l3 = np.sqrt(self.geometry_l2**2 + self.geometry_l3**2 - 2 * self.geometry_l2 * self.geometry_l3 * np.cos(deg2rad(self.geometry_gamma)))
+        # angle between l2 and _l3
+        self._gamma = rad2deg(np.arcsin(np.sin(deg2rad(self.geometry_gamma))/self._l3*self.geometry_l3))
+        # range of IK for the distal joint
         self.r_min = config['geometry']['r_min']
         self.r_max = self.geometry_l1 + self.geometry_l2 - config['geometry']['r_max_offset']
 
@@ -316,8 +321,39 @@ class DDGripper(object):
 
     # ik of fingertip
 
-    # def ik_finger_tip(self, pos):
-    #     return pos
+    def ik_finger_tip(self, pos, finger):
+        x_tip, y_tip = pos
+        # link from origin to tip
+        l_tip = np.sqrt(x_tip**2+y_tip**2)
+        # angle from origin to tip
+        q_tip = rad2deg(np.arctan2(y_tip,x_tip))
+        # angle between l1 and l_tip
+        q_1_tip = rad2deg(np.arccos((self._l3**2 - self.geometry_l1**2 - l_tip**2)/(-2 * self.geometry_l1 * l_tip)))
+        # angle from origin to l1
+        if finger == 0: # left finger
+            q1 =  q_tip - q_1_tip
+        elif finger == 1: # right finger
+            q1 = q_tip + q_1_tip
+        # angle between l1 and _l3
+        q_1__3 = rad2deg(np.arccos((l_tip**2 - self.geometry_l1**2 - self._l3**2)/(-2 * self.geometry_l1 * self._l3)))
+        # angle between l1 and l2
+        q21 = q_1__3 - self._gamma
+        # angle from orgin to l2
+        if finger == 0: # left finger
+            q2 = 180 - q21 + q1
+        elif finger == 1: # right finger
+            q2 = -180 + q21 + q1
+        x = self.geometry_l1 * np.cos(deg2rad(q1)) + self.geometry_l2 * np.cos(deg2rad(q2))
+        y = self.geometry_l1 * np.sin(deg2rad(q1)) + self.geometry_l2 * np.sin(deg2rad(q2))
+        return self.ik_finger_pos((x,y))
+
+    def set_left_tip(self, pos):
+        cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 0)
+        self.set_left_a1_a2(cmd_a1, cmd_a2)
+
+    def set_right_tip(self, pos):
+        cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 1)
+        self.set_right_a1_a2(cmd_a1, cmd_a2)
 
     # parallel jaw
 
@@ -374,11 +410,12 @@ if __name__ == "__main__":
     gripper = DDGripper()
     gripper.arm()
     # gripper.startup_dance()
-    gripper.set_left_finger_pos((50,0))
-    gripper.set_right_finger_pos((50,0))
+    gripper.set_left_tip((0,-110))
+    gripper.set_right_tip((0,110))
     # while 1:
     #     print("=========================")
-    #     print(gripper.left_a1,gripper.left_a2)
-    #     print(gripper.ik_left_finger_pos(gripper.left_finger_pos))
+    #     print(gripper.right_a1,gripper.right_a2)
+    #     print(gripper.ik_finger_tip(gripper.right_tip_pos, 1))
+    #     time.sleep(1)
 
     # rospy.spin()
