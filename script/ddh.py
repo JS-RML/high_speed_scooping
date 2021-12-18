@@ -211,7 +211,7 @@ class DDGripper(object):
     def left_tip_pos(self):
         # angle between distal link and vector from origin to distal joint
         _a2 = rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.left_finger_dist**2)/(-2 * self.geometry_l2 * self.left_finger_dist)))
-        #angle of l3 relative to origin
+        # angle of l3 relative to x axis
         q_tip = self.left_a1 + _a2 + self.geometry_gamma - 180
         x = self.left_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
         y = self.left_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
@@ -221,7 +221,7 @@ class DDGripper(object):
     def right_tip_pos(self):
         # angle between distal link and vector from origin to distal joint
         _a2 = rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.right_finger_dist**2)/(-2 * self.geometry_l2 * self.right_finger_dist)))
-        #angle of l3 relative to origin
+        # angle of l3 relative to x axis
         q_tip = self.right_a1 - (_a2 + self.geometry_gamma - 180)
         x = self.right_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
         y = self.right_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
@@ -325,11 +325,11 @@ class DDGripper(object):
         x_tip, y_tip = pos
         # link from origin to tip
         l_tip = np.sqrt(x_tip**2+y_tip**2)
-        # angle from origin to tip
+        # angle of l_tip relative to x axis
         q_tip = rad2deg(np.arctan2(y_tip,x_tip))
         # angle between l1 and l_tip
         q_1_tip = rad2deg(np.arccos((self._l3**2 - self.geometry_l1**2 - l_tip**2)/(-2 * self.geometry_l1 * l_tip)))
-        # angle from origin to l1
+        # angle of l1 relative to x axis
         if finger == 0: # left finger
             q1 =  q_tip - q_1_tip
         elif finger == 1: # right finger
@@ -338,11 +338,12 @@ class DDGripper(object):
         q_1__3 = rad2deg(np.arccos((l_tip**2 - self.geometry_l1**2 - self._l3**2)/(-2 * self.geometry_l1 * self._l3)))
         # angle between l1 and l2
         q21 = q_1__3 - self._gamma
-        # angle from orgin to l2
+        # angle of l2 relative to x axis
         if finger == 0: # left finger
             q2 = 180 - q21 + q1
         elif finger == 1: # right finger
             q2 = -180 + q21 + q1
+        # target position of distal joint
         x = self.geometry_l1 * np.cos(deg2rad(q1)) + self.geometry_l2 * np.cos(deg2rad(q2))
         y = self.geometry_l1 * np.sin(deg2rad(q1)) + self.geometry_l2 * np.sin(deg2rad(q2))
         return self.ik_finger_pos((x,y))
