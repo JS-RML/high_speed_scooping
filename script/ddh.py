@@ -51,10 +51,10 @@ def set_pos_gain(axis, pos_gain):
 
 class DDGripper(object):
 
-    def __init__(self):
+    def __init__(self, config_name):
 
         print('reading gripper parameters...')
-        config_file = "ddh_default.yaml"
+        config_file = config_name + ".yaml"
         with open("../config/"+config_file, 'r') as stream:
             try:
                 config = yaml.safe_load(stream)
@@ -205,24 +205,40 @@ class DDGripper(object):
         y = self.right_finger_dist * np.sin(deg2rad(self.right_a1))
         return x, y
 
+    # a3: angle between distal link (L2) and vector from origin to distal joint
+
+    @property
+    def left_a3(self):
+        return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.left_finger_dist**2)/(-2 * self.geometry_l2 * self.left_finger_dist)))
+
+    @property
+    def right_a3(self):
+        return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.right_finger_dist**2)/(-2 * self.geometry_l2 * self.right_finger_dist)))
+
+    # angle of finger surface relative to x axis
+
+    @property
+    def left_phi(self):
+        return self.left_a1 + self.left_a3 + self.geometry_beta - 180
+
+    @property
+    def right_phi(self):
+        return self.right_a1 - (self.right_a3 + self.geometry_beta - 180)
+
     # position of fingertip in motor frame
 
     @property
     def left_tip_pos(self):
-        # angle between distal link and vector from origin to distal joint
-        _a2 = rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.left_finger_dist**2)/(-2 * self.geometry_l2 * self.left_finger_dist)))
         # angle of l3 relative to x axis
-        q_tip = self.left_a1 + _a2 + self.geometry_gamma - 180
+        q_tip = self.left_a1 + self.left_a3 + self.geometry_gamma - 180
         x = self.left_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
         y = self.left_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
         return x, y
 
     @property
     def right_tip_pos(self):
-        # angle between distal link and vector from origin to distal joint
-        _a2 = rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.right_finger_dist**2)/(-2 * self.geometry_l2 * self.right_finger_dist)))
         # angle of l3 relative to x axis
-        q_tip = self.right_a1 - (_a2 + self.geometry_gamma - 180)
+        q_tip = self.right_a1 - (self.right_a3 + self.geometry_gamma - 180)
         x = self.right_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
         y = self.right_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
         return x, y
@@ -408,15 +424,14 @@ class DDGripper(object):
 
 if __name__ == "__main__":
     # rospy.init_node('ddh_driver_node')
-    gripper = DDGripper()
-    gripper.arm()
+    gripper = DDGripper("ddh_default")
+    # gripper.arm()
     # gripper.startup_dance()
-    gripper.set_left_tip((0,-110))
-    gripper.set_right_tip((0,110))
-    # while 1:
-    #     print("=========================")
-    #     print(gripper.right_a1,gripper.right_a2)
-    #     print(gripper.ik_finger_tip(gripper.right_tip_pos, 1))
-    #     time.sleep(1)
+    # gripper.set_left_tip((0,-110))
+    # gripper.set_right_tip((0,110))
+    while 1:
+        print("=========================")
+        print(gripper.left_phi,gripper.right_phi)
+        time.sleep(0.5)
 
     # rospy.spin()
