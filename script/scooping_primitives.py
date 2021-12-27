@@ -30,6 +30,8 @@ class HighSpeedScooping:
         self.fg_dist = config['finger_position'] * self.obj_l
         self.tb_dist = config['thumb_prescoop_position'] * self.obj_l
         self.center_dist = config['gripper_center'] * self.obj_l
+        self.fg_stiff = config['finger_stiffness']
+        self.tb_stiff = config['thumb_stiffness']
         self.T_t_g = np.array(config['T_tool_gripper'])
         self.P_g_L = np.array(config['P_gripper_MotorL'])
         self.P_g_R = np.array(config['P_gripper_MotorR'])
@@ -60,6 +62,9 @@ class HighSpeedScooping:
         # F, T target position in their motor frame
         P_L_F = P_g_F - self.P_g_L
         P_R_T = P_g_T - self.P_g_R
+        self.gripper.arm()
+        self.gripper.set_stiffness(self.fg_stiff, 'L')
+        self.gripper.set_stiffness(self.tb_stiff, 'R')
         self.ddh.set_left_tip(tuple(P_L_F[:-1]))
         self.ddh.set_right_tip(tuple(P_R_T[:-1]))
 
