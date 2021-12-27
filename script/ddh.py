@@ -52,11 +52,10 @@ def set_pos_gain(axis, pos_gain):
 class DDGripper(object):
 
     def __init__(self, config_name):
-
-        print('reading gripper parameters...')
         config_file = config_name + ".yaml"
         with open("../config/"+config_file, 'r') as stream:
             try:
+                print('reading gripper config...')
                 config = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
                 print(exc)
@@ -215,7 +214,7 @@ class DDGripper(object):
     def right_a3(self):
         return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.right_finger_dist**2)/(-2 * self.geometry_l2 * self.right_finger_dist)))
 
-    # angle of finger surface relative to x axis
+    # phi: angle of finger surface relative to x axis
 
     @property
     def left_phi(self):
@@ -365,10 +364,12 @@ class DDGripper(object):
         return self.ik_finger_pos((x,y))
 
     def set_left_tip(self, pos):
+        print("Setting left tip:", pos)
         cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 0)
         self.set_left_a1_a2(cmd_a1, cmd_a2)
 
     def set_right_tip(self, pos):
+        print("Setting right tip:", pos)
         cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 1)
         self.set_right_a1_a2(cmd_a1, cmd_a2)
 
@@ -424,14 +425,14 @@ class DDGripper(object):
 
 if __name__ == "__main__":
     # rospy.init_node('ddh_driver_node')
-    gripper = DDGripper("ddh_default")
-    # gripper.arm()
+    gripper = DDGripper("ddh_scooping")
+    gripper.arm()
     # gripper.startup_dance()
-    # gripper.set_left_tip((0,-110))
-    # gripper.set_right_tip((0,110))
+    gripper.set_left_tip((120,0))
+    gripper.set_right_tip((120,0))
     while 1:
         print("=========================")
-        print(gripper.left_phi,gripper.right_phi)
-        time.sleep(0.5)
+        print(gripper.left_tip_pos,gripper.right_tip_pos)
+        time.sleep(0.2)
 
     # rospy.spin()
