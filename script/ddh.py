@@ -126,11 +126,20 @@ class DDGripper(object):
         disarm(self.finger_R.axis0)
         disarm(self.finger_R.axis1)
 
-    def set_stiffness(self,gain):
-        set_pos_gain(self.finger_L.axis0, gain)
-        set_pos_gain(self.finger_L.axis1, gain)
-        set_pos_gain(self.finger_R.axis0, gain)
-        set_pos_gain(self.finger_R.axis1, gain)
+    def set_stiffness(self, gain, finger = 'LR'):
+        if finger == 'LR':
+            set_pos_gain(self.finger_L.axis0, gain)
+            set_pos_gain(self.finger_L.axis1, gain)
+            set_pos_gain(self.finger_R.axis0, gain)
+            set_pos_gain(self.finger_R.axis1, gain)
+        elif finger == 'L':
+            set_pos_gain(self.finger_L.axis0, gain)
+            set_pos_gain(self.finger_L.axis1, gain)
+        elif finger == 'R':
+            set_pos_gain(self.finger_R.axis0, gain)
+            set_pos_gain(self.finger_R.axis1, gain)
+        else
+            print("Invalid finger argument.")
 
     @property
     def motor_pos_r0(self):
@@ -345,18 +354,18 @@ class DDGripper(object):
         # angle between l1 and l_tip
         q_1_tip = rad2deg(np.arccos((self._l3**2 - self.geometry_l1**2 - l_tip**2)/(-2 * self.geometry_l1 * l_tip)))
         # angle of l1 relative to x axis
-        if finger == 0: # left finger
+        if finger == 'L': # left finger
             q1 =  q_tip - q_1_tip
-        elif finger == 1: # right finger
+        elif finger == 'R': # right finger
             q1 = q_tip + q_1_tip
         # angle between l1 and _l3
         q_1__3 = rad2deg(np.arccos((l_tip**2 - self.geometry_l1**2 - self._l3**2)/(-2 * self.geometry_l1 * self._l3)))
         # angle between l1 and l2
         q21 = q_1__3 - self._gamma
         # angle of l2 relative to x axis
-        if finger == 0: # left finger
+        if finger == 'L': # left finger
             q2 = 180 - q21 + q1
-        elif finger == 1: # right finger
+        elif finger == 'R': # right finger
             q2 = -180 + q21 + q1
         # target position of distal joint
         x = self.geometry_l1 * np.cos(deg2rad(q1)) + self.geometry_l2 * np.cos(deg2rad(q2))
@@ -365,12 +374,12 @@ class DDGripper(object):
 
     def set_left_tip(self, pos):
         print("Setting left tip:", pos)
-        cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 0)
+        cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'L')
         self.set_left_a1_a2(cmd_a1, cmd_a2)
 
     def set_right_tip(self, pos):
         print("Setting right tip:", pos)
-        cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 1)
+        cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'R')
         self.set_right_a1_a2(cmd_a1, cmd_a2)
 
     # parallel jaw
