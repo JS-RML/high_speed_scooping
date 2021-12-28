@@ -97,7 +97,7 @@ class DDGripper(object):
         # angle between l2 and _l3
         self._gamma = rad2deg(np.arcsin(np.sin(deg2rad(self.geometry_gamma))/self._l3*self.geometry_l3))
         # range of IK for the distal joint
-        self.r_min = config['geometry']['r_min']
+        self.r_min = np.sqrt(self.geometry_l1**2 - self.geometry_l2**2) + config['geometry']['r_min_offset']
         self.r_max = self.geometry_l1 + self.geometry_l2 - config['geometry']['r_max_offset']
 
         print('connecting to odrive...')
@@ -138,7 +138,7 @@ class DDGripper(object):
         elif finger == 'R':
             set_pos_gain(self.finger_R.axis0, gain)
             set_pos_gain(self.finger_R.axis1, gain)
-        else
+        else:
             print("Invalid finger argument.")
 
     @property
@@ -346,6 +346,7 @@ class DDGripper(object):
     # ik of fingertip
 
     def ik_finger_tip(self, pos, finger):
+        np.seterr(all = "raise")
         x_tip, y_tip = pos
         # link from origin to tip
         l_tip = np.sqrt(x_tip**2+y_tip**2)
@@ -374,12 +375,20 @@ class DDGripper(object):
 
     def set_left_tip(self, pos):
         print("Setting left tip:", pos)
-        cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'L')
+        try:
+            cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'L')
+        except:
+            print('Target position out of finger workspace!')
+            return
         self.set_left_a1_a2(cmd_a1, cmd_a2)
 
     def set_right_tip(self, pos):
         print("Setting right tip:", pos)
-        cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'R')
+        try:
+            cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'R')
+        except:
+            print('Target position out of finger workspace!')
+            return
         self.set_right_a1_a2(cmd_a1, cmd_a2)
 
     # parallel jaw
@@ -437,11 +446,12 @@ if __name__ == "__main__":
     gripper = DDGripper("ddh_scooping")
     gripper.arm()
     # gripper.startup_dance()
-    gripper.set_left_tip((120,0))
-    gripper.set_right_tip((120,0))
+    gripper.set_left_tip((150,0))
+    gripper.set_right_tip((150,0))
     while 1:
         print("=========================")
-        print(gripper.left_tip_pos,gripper.right_tip_pos)
+        # print(gripper.left_tip_pos,gripper.right_tip_pos)
+        print((gripper.left_a2 + gripper.right_a2)/2)
         time.sleep(0.2)
 
     # rospy.spin()
