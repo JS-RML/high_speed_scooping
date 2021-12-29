@@ -22,5 +22,6 @@ geometry:
   beta: 135 # angle from l2 to finger surface
   l3: 58 # distance from distal joint to fingertip
   gamma: 153 # angle from l2 to fingertip
-  r_min: 40 # min distance of distal joint to motor
+  # r: distance of distal joint to motor
+  r_min_offset: 3 # r_min = sqrt(l1**2 - l2**2) + r_min_offset
   r_max_offset: 2 # r_max = l1 + l2 - r_max_offset
