@@ -12,12 +12,12 @@ from odrive.enums import *
 import yaml
 
 
-def arm(axis, gain):
-    axis.controller.config.input_mode = INPUT_MODE_POS_FILTER
+def arm(axis, gain, BW):
+    axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH
     axis.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
     axis.controller.config.pos_gain = gain
     axis.controller.config.vel_gain = 1
-    axis.controller.config.input_filter_bandwidth = 100
+    axis.controller.config.input_filter_bandwidth = BW
 
 def disarm(axis):
     axis.requested_state = AXIS_STATE_IDLE
@@ -25,6 +25,8 @@ def disarm(axis):
 def set_pos_gain(axis, pos_gain):
     axis.controller.config.pos_gain = pos_gain 
 
+def set_input_bandwidth(axis, BW):
+    axis.controller.config.input_filter_bandwidth = BW
 
 # def axis2ros(ax):
 #     msg = Axis()
@@ -114,11 +116,11 @@ class DDGripper(object):
         # self.pub_gripper_state = rospy.Publisher('/ddh/state', GripperState, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.02), self.refresh)
 
-    def arm(self, gain = 250):
-        arm(self.finger_L.axis0, gain)
-        arm(self.finger_L.axis1, gain)
-        arm(self.finger_R.axis0, gain)
-        arm(self.finger_R.axis1, gain)
+    def arm(self, gain = 250, BW = 500):
+        arm(self.finger_L.axis0, gain, BW)
+        arm(self.finger_L.axis1, gain, BW)
+        arm(self.finger_R.axis0, gain, BW)
+        arm(self.finger_R.axis1, gain, BW)
 
     def disarm(self):
         disarm(self.finger_L.axis0)
@@ -140,6 +142,12 @@ class DDGripper(object):
             set_pos_gain(self.finger_R.axis1, gain)
         else:
             print("Invalid finger argument.")
+
+    def set_bandwidth(self, BW):
+        set_input_bandwidth(self.finger_L.axis0, BW)
+        set_input_bandwidth(self.finger_L.axis1, BW)
+        set_input_bandwidth(self.finger_R.axis0, BW)
+        set_input_bandwidth(self.finger_R.axis1, BW)
 
     @property
     def motor_pos_r0(self):
@@ -448,10 +456,10 @@ if __name__ == "__main__":
     # gripper.startup_dance()
     gripper.set_left_tip((150,0))
     gripper.set_right_tip((150,0))
-    while 1:
-        print("=========================")
-        # print(gripper.left_tip_pos,gripper.right_tip_pos)
-        print((gripper.left_a2 + gripper.right_a2)/2)
-        time.sleep(0.2)
+    # while 1:
+    #     print("=========================")
+    #     # print(gripper.left_tip_pos,gripper.right_tip_pos)
+    #     print((gripper.left_a2 + gripper.right_a2)/2)
+    #     time.sleep(0.2)
 
     # rospy.spin()

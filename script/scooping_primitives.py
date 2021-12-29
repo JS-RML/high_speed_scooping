@@ -62,9 +62,9 @@ class HighSpeedScooping:
         # F, T target position in their motor frame
         P_L_F = P_g_F - self.P_g_L
         P_R_T = P_g_T - self.P_g_R
-        self.gripper.arm()
-        self.gripper.set_stiffness(self.fg_stiff, 'L')
-        self.gripper.set_stiffness(self.tb_stiff, 'R')
+        self.ddh.arm()
+        self.ddh.set_stiffness(self.fg_stiff, 'L')
+        self.ddh.set_stiffness(self.tb_stiff, 'R')
         self.ddh.set_left_tip(tuple(P_L_F[:-1]))
         self.ddh.set_right_tip(tuple(P_R_T[:-1]))
 
@@ -77,8 +77,8 @@ class HighSpeedScooping:
         # set gripper initial pose
         init_pose = m3d.Transform()
         # work in -ve x and +ve y region only
-        init_pose.pos.x = x_obj - (self.fg_dist - self.center_dist) * cos(radians(q_obj)) / 1000
-        init_pose.pos.y = y_obj + (self.fg_dist - self.center_dist) * sin(radians(q_obj)) / 1000
+        init_pose.pos.x = x_obj + (self.fg_dist - self.obj_l/2) * cos(radians(q_obj)) / 1000
+        init_pose.pos.y = y_obj + (self.fg_dist - self.obj_l/2) * sin(radians(q_obj)) / 1000
         init_pose.pos.z = self.grip_h
         init_pose.orient.rotate_xb(pi)
         init_pose.orient.rotate_zt(radians(90-q_obj))
