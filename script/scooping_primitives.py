@@ -88,4 +88,6 @@ class HighSpeedScooping:
         self.ur.set_pose(init_pose, self.tcp_vel, self.tcp_acc)
 
     def smack_and_scoop(self):
+        #TODO: estimate gripper pose relative to surface after contacts
+        # execute scooping motion according to relative gripper pose
         return
