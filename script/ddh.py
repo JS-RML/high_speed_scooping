@@ -197,7 +197,7 @@ class DDGripper(object):
     def left_a2(self):
         return (self.link_pos_l0-self.link_pos_l1)/2
 
-    # distance from motor joint to distal joint (base joint of finger)
+    # r: distance from motor joint to distal joint (base joint of finger)
 
     @property
     def left_finger_dist(self):
@@ -454,8 +454,10 @@ if __name__ == "__main__":
     gripper = DDGripper("ddh_scooping")
     gripper.arm()
     # gripper.startup_dance()
-    gripper.set_left_tip((150,0))
-    gripper.set_right_tip((150,0))
+    # gripper.set_left_tip((150,0))
+    # gripper.set_right_tip((150,0))
+    gripper.set_left_tip((157, 40))
+    gripper.set_right_tip((157, -40))
     # while 1:
     #     print("=========================")
     #     # print(gripper.left_tip_pos,gripper.right_tip_pos)
