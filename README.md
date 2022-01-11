@@ -18,7 +18,7 @@ This repository contains the implementation of **High-Speed Scooping**, which re
 ## 2. Prerequisites
 ### 2.1 Hardware
 - [**Universal Robot UR10**](https://www.universal-robots.com/products/ur10-robot/): Industrial Robot Arm 
-- [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): Custom BLDC-actuated gripper reproduced from the paper: [Direct Drive Hands](http://www.roboticsproceedings.org/rss15/p53.pdf)
+- [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): BLDC-actuated gripper reproduced from the paper: [Direct Drive Hands](http://www.roboticsproceedings.org/rss15/p53.pdf)
 
 ### 2.2 Software
 The codes are implemented with **python3**.
@@ -28,6 +28,9 @@ Install python3 and dependencies:
 sudo apt install python3 python3-pip
 sudo pip3 install urx odrive jupyter
 ```
+**Note:** Our scooping software requires minor modification to the `urx` library for getting UR10 tool speed. To do this, replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). The path for original urx package: 
+- For local environment: `/usr/local/lib/python3.x/dist-packages/urx`
+- For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx`
 
 ## 3. Run High-Speed Scooping
 1. Start a Jupyter Notebook server in terminal `jupyter notebook`.
