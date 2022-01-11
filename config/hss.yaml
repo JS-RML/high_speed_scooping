@@ -1,15 +1,15 @@
 # object's geometry
-object_length: 43 # mm
+object_length: 43 # mm domino/oreo:43 x 7
 object_thickness: 3 # mm
 
 # scooping parameters
 gripper_tilt: 60 # angle of the gripper
 gripper_height: 0.2 # in meter, initial height of gripper in world frame 
 contact_distance: 150 # in mm, dist from gripper frame to surface when fingers are in contact
-finger_position: 0.8 # dimensionless F position on the object from the scooping edge
+finger_position: 0.7 # dimensionless F position on the object from the scooping edge
 thumb_prescoop_position: 0.2 # dimensionless prescoop position away from the scooping edge
-gripper_center: 0.8 # gripper center line position on the object from the scooping edge
-finger_stiffness: 100 # pos gain in motor space
+gripper_center: 0.5 # gripper center line position on the object from the scooping edge
+finger_stiffness: 30 # pos gain in motor space
 thumb_stiffness: 60 # pos gain in motor space
 
 # frame transformation parameters
