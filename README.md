@@ -1,7 +1,12 @@
 # High-Speed Scooping
 
 ## 1. Overview
-This repository contains the implementation of **High-Speed Scooping**, which refers to the task of picking up thin objects rapidly by interacting with the environment through a direct-driven gripper. A stable pinch grasp configuration can be obtained by the scooping technique, which addresses the limitation of [**Smack and Snatch**](https://www.youtube.com/watch?v=xnHtb0XP3U4&ab_channel=ManipulationLab) that is unstable for grasping relatively thin objects, for example, plastic cards.
+This repository contains the implementation of **High-Speed Scooping**, which refers to the task of picking up thin objects rapidly by interacting with the environment through a direct-drive gripper. Our scooping technique ensures a pinch grasp configuration can be obtained to pick up the object securely, which addresses the limitation of [**Smack and Snatch**](https://www.youtube.com/watch?v=xnHtb0XP3U4&ab_channel=ManipulationLab) that is unstable for grasping relatively thin objects, for example, plastic cards. 
+
+The process of High-Speed Scooping consists of three steps as follows: 
+1. Initialize the pre-scooping poses of gripper and fingers above the object.
+2. Accelerate the gripper towards the surface where the height is unknown.
+3. Detect the collision with the BLDC motors and trigger the deceleration of the robot. Meanwhile, the fingers are closed to scoop up the object with the stiffness (position gain) increased.
 
 ### *High-Speed Scooping*
 <p align = "center">
@@ -18,20 +23,49 @@ This repository contains the implementation of **High-Speed Scooping**, which re
 ## 2. Prerequisites
 ### 2.1 Hardware
 - [**Universal Robot UR10**](https://www.universal-robots.com/products/ur10-robot/): Industrial Robot Arm 
-- [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): BLDC-actuated gripper reproduced from the paper: [Direct Drive Hands](http://www.roboticsproceedings.org/rss15/p53.pdf)
+- [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): BLDC-motor-actuated gripper reproduced from the paper: [Direct Drive Hands](http://www.roboticsproceedings.org/rss15/p53.pdf)
 
 ### 2.2 Software
 The codes are implemented with **python3**.
 
-Install python3 and dependencies:
+To install python3 and dependencies:
 ```
 sudo apt install python3 python3-pip
 sudo pip3 install urx odrive jupyter
 ```
-**Note:** Our scooping software requires minor modification to the `urx` library for getting UR10 tool speed. To do this, replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). The path for original urx package: 
+**Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. To do this, replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). The path to the original urx package: 
 - For local environment: `/usr/local/lib/python3.x/dist-packages/urx`
 - For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx`
 
 ## 3. Run High-Speed Scooping
+### 3.1 Run with real robot
 1. Start a Jupyter Notebook server in terminal `jupyter notebook`.
 2. Run `scooping_test.ipynb` through the Jupyter Notebook web interface.
+
+### 3.2 Changing execution parameters
+The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The parameters are as follows:
+- **Object Dimension**
+    - ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
+    - ***object_thickness***: object thickness (<img src="https://render.githubusercontent.com/render/math?math=mm">)
+- **Scooping Parameters**
+    - ***gripper_tilt***: tilting angle of the gripper ( <img src="https://render.githubusercontent.com/render/math?math=\^\circ"> )
+    - ***gripper_height***: initial height of gripper in world frame (<img src="https://render.githubusercontent.com/render/math?math=m">)
+    - ***contact_distance***: distance from gripper frame to surface when the fingers are in contact (<img src="https://render.githubusercontent.com/render/math?math=mm">)
+    - ***finger_prescoop_position***: dimensionless F position on the object from the scooping edge
+    - ***thumb_prescoop_position***: dimensionless prescoop position away from the scooping edge
+    - ***gripper_center***: gripper center line dimensionless position on the object from the scooping edge
+    - ***finger_stiffness***: position gain of finger
+    - ***thumb_stiffness***: position gain of thumb
+
+- **UR10 Motion Parameters**
+    - ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
+    - ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
+    - ***smack_vel***: velocity of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
+    - ***smack_acc***: acceleration of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
+    - ***lift_vel***: velocity of tcp when lifting the object up from the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
+
+<!-- ## 4. Background -->
+
+
+## Maintenance
+For any technical issues, please contact Ka Hei Mak (khmakac@connect.ust.hk)

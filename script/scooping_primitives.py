@@ -27,7 +27,7 @@ class HighSpeedScooping:
         self.theta = config['gripper_tilt']
         self.grip_h = config['gripper_height']
         self.cont_dist = config['contact_distance']
-        self.fg_dist = config['finger_position'] * self.obj_l
+        self.fg_dist = config['finger_prescoop_position'] * self.obj_l
         self.tb_dist = config['thumb_prescoop_position'] * self.obj_l
         self.center_dist = config['gripper_center'] * self.obj_l
         self.fg_stiff = config['finger_stiffness']
