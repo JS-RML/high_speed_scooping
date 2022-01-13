@@ -4,9 +4,9 @@
 This repository contains the implementation of **High-Speed Scooping**, which refers to the task of picking up thin objects rapidly by interacting with the environment through a direct-drive gripper. Our scooping technique ensures a pinch grasp configuration can be obtained to pick up the object securely, which addresses the limitation of [**Smack and Snatch**](https://www.youtube.com/watch?v=xnHtb0XP3U4&ab_channel=ManipulationLab) that is unstable for grasping relatively thin objects, for example, plastic cards. 
 
 The process of High-Speed Scooping consists of three steps as follows: 
-1. Initialize the pre-scooping poses of gripper and fingers above the object.
+1. Initialize the pre-scooping pose of the gripper and fingers above the object such that the gripper is tilted to attain a lower angle of attack.
 2. Accelerate the gripper towards the surface where the height is unknown.
-3. Detect the collision with the BLDC motors and trigger the deceleration of the robot. Meanwhile, the fingers are closed to scoop up the object with the stiffness (position gain) increased.
+3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object.
 
 ### *High-Speed Scooping*
 <p align = "center">
@@ -26,9 +26,9 @@ The process of High-Speed Scooping consists of three steps as follows:
 - [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): BLDC-motor-actuated gripper reproduced from the paper: [Direct Drive Hands](http://www.roboticsproceedings.org/rss15/p53.pdf)
 
 ### 2.2 Software
-The codes are implemented with **python3**.
+Our software is implemented with **python3** and tested on **Ubuntu 16.04**.
 
-To install python3 and dependencies:
+To install python3 and dependencies on Linux:
 ```
 sudo apt install python3 python3-pip
 sudo pip3 install urx odrive jupyter
