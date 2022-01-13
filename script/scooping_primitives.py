@@ -35,12 +35,12 @@ class HighSpeedScooping:
         self.T_t_g = np.array(config['T_tool_gripper'])
         self.P_g_L = np.array(config['P_gripper_MotorL'])
         self.P_g_R = np.array(config['P_gripper_MotorR'])
-        self.tcp_vel = config['tcp_vel']
-        self.tcp_acc = config['tcp_acc']
+        self.init_vel = config['init_vel']
+        self.init_acc = config['init_acc']
 
 
     def initialize_gripper_pose(self, object_2D_pose):
-        '''Initial robot pose before smack and scoop with the gripper pose setting above the object
+        ''' Initialize robot pose before smack and scoop with the gripper pose setting above the object
         Parameters:
             object_2D_pose(tuple): (x_obj, y_obj, q_obj) object pose in x-y plane of ur10 base frame 
                 x_obj(m): x coordinate of object's center
@@ -85,9 +85,16 @@ class HighSpeedScooping:
         init_pose.orient.rotate_xt(radians(90-self.theta))
         print("Setting pose: ")
         print(init_pose.pose_vector)
-        self.ur.set_pose(init_pose, self.tcp_vel, self.tcp_acc)
+        self.ur.set_pose(init_pose, self.init_vel, self.init_acc)
 
-    def smack_and_scoop(self):
+    def simple_scoop(self):
+        ''' Close the fingers directly after the collision is detected
+        Parameters:
+        Returns:
+        '''
+        return
+
+    def reactive_scoop(self):
         #TODO: estimate gripper pose relative to surface after contacts
         # execute scooping motion according to relative gripper pose
         return
