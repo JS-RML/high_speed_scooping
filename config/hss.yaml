@@ -12,6 +12,10 @@ gripper_center: 0.8 # gripper center line position on the object from the scoopi
 finger_stiffness: 30 # pos gain in motor space
 thumb_stiffness: 60 # pos gain in motor space
 
+# UR10 motion parameters
+init_vel: 0.05
+init_acc: 0.05
+
 # frame transformation parameters
 T_tool_gripper: # homogeneous transformation matrix of Gripper frame relative to tool frame
   - [0 ,0 ,-1, 0]
@@ -22,7 +26,3 @@ T_tool_gripper: # homogeneous transformation matrix of Gripper frame relative to
 P_gripper_MotorL: [0, -35, 0]
 # vector from gripper frame to right motor frame
 P_gripper_MotorR: [0, 35, 0]
-
-# ur10 motion parameters
-init_vel: 0.05
-init_acc: 0.05
