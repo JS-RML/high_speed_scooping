@@ -17,9 +17,9 @@ init_acc: 0.05 # (m/s^2) acceleration...
 # smack and scoop parameters
 smack_vel: 0.3 # (m/s) velocity of tcp when approaching to the surface
 smack_acc: 0.3 # (m/s^2) acceleration...
-slow_dist: 0.01 # (meter) distance of gripper slow down after collision
+slow_dist: 0.01 # (meter) distance of gripper slowing down after collision
 lift_vel: 0.3 # (m/s) velocity of tcp when lifting the object up from the surface 
-lift_dist: 0.2 # (meter) distance of gripper lifted from the surface
+lift_dist: 0.2 # (meter) distance of gripper lifted off from the surface
 finger_scoop_stiffness: 100 # pos gain of finger after collision
 thumb_scoop_stiffness: 100 # pos gain of thumb after collision
 

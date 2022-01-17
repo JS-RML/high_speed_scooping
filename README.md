@@ -47,22 +47,25 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 - **Object Dimension**
     - ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
     - ***object_thickness***: object thickness (<img src="https://render.githubusercontent.com/render/math?math=mm">)
-- **Scooping Parameters**
+- **Pre-scooping Parameters**
     - ***gripper_tilt***: tilting angle of the gripper ( <img src="https://render.githubusercontent.com/render/math?math=\^\circ"> )
     - ***gripper_height***: initial height of gripper in world frame (<img src="https://render.githubusercontent.com/render/math?math=m">)
     - ***contact_distance***: distance from gripper frame to surface when the fingers are in contact (<img src="https://render.githubusercontent.com/render/math?math=mm">)
     - ***finger_prescoop_position***: dimensionless F position on the object from the scooping edge
     - ***thumb_prescoop_position***: dimensionless prescoop position away from the scooping edge
     - ***gripper_center***: gripper center line dimensionless position on the object from the scooping edge
-    - ***finger_stiffness***: position gain of finger
-    - ***thumb_stiffness***: position gain of thumb
-
-- **UR10 Motion Parameters**
+    - ***finger_stiffness***: position gain of finger before scoop
+    - ***thumb_stiffness***: position gain of thumb before scoop
     - ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
+- **Smack and Scoop Parameters**
     - ***smack_vel***: velocity of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***smack_acc***: acceleration of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
+    - ***slow_dist***: distance of gripper slowing down after collision (<img src="https://render.githubusercontent.com/render/math?math=m">)
     - ***lift_vel***: velocity of tcp when lifting the object up from the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
+    - ***lift_dist***: distance of gripper lifted off from the surface (<img src="https://render.githubusercontent.com/render/math?math=m">)
+    - ***finger_scoop_stiffness***: position gain of finger after collision
+    - ***thumb_scoop_stiffness***: position gain of thumb after collision
 
 <!-- ## 4. Background -->
 
