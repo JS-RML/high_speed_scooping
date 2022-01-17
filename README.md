@@ -3,10 +3,24 @@
 ## 1. Overview
 This repository contains the implementation of **High-Speed Scooping**, which refers to the task of picking up thin objects rapidly by interacting with the environment through a direct-drive gripper. Our scooping technique ensures a pinch grasp configuration can be obtained to pick up the object securely, which addresses the limitation of [**Smack and Snatch**](https://www.youtube.com/watch?v=xnHtb0XP3U4&ab_channel=ManipulationLab) that is unstable for grasping relatively thin objects, for example, plastic cards. 
 
-The process of High-Speed Scooping consists of three steps as follows: 
+**Scooping Process**
+
+<p align = "center">
+<img src="media/hss_process.jpg" width="800"> 
+</p>
+
+High-Speed Scooping is executed as follows:
+- **t = 0s**: The pose of the gripper and fingers is initialized above the object such that a lower angle of attack is attained for the thumb (right finger) by tilting the gripper.
+- **t = 0.75s**: The gripper accelerates towards the surface where the height is unknown.
+- **t = 1.15s**: The BLDC motors detect the collision through the fingers and the program triggers the deceleration to stop the gripper hitting to the surface. The fingers are commanded to close simultaneously with increased stiffness (position gain).
+- **t = 1.2s**: The thumb slides along the surface and penetrates below the object.
+- **t = 1.27s**: The gripper reaches zero velocity and accelerates upward. Meanwhile, the stiffness of the fingers increases again to secure the grasp.
+- **t = 1.48s**: The gripper lifts up from the surface to compele the task. 
+
+<!-- The process of High-Speed Scooping consists of three steps as follows: 
 1. Initialize the pre-scooping pose of the gripper and fingers above the object such that the gripper is tilted to attain a lower angle of attack.
 2. Accelerate the gripper towards the surface where the height is unknown.
-3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object.
+3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object. -->
 
 ### *High-Speed Scooping*
 <p align = "center">
