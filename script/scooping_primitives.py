@@ -21,26 +21,37 @@ class HighSpeedScooping:
                 config = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
                 print(exc)
+
+        self.is_init = False
         
         self.obj_l = config['object_length']
         self.obj_t = config['object_thickness']
+        # parameters for pre-scooping
         self.theta = config['gripper_tilt']
         self.grip_h = config['gripper_height']
         self.cont_dist = config['contact_distance']
         self.fg_dist = config['finger_prescoop_position'] * self.obj_l
         self.tb_dist = config['thumb_prescoop_position'] * self.obj_l
         self.center_dist = config['gripper_center'] * self.obj_l
-        self.fg_stiff = config['finger_stiffness']
-        self.tb_stiff = config['thumb_stiffness']
+        self.fg_pre_stiff = config['finger_prescoop_stiffness']
+        self.tb_pre_stiff = config['thumb_prescoop_stiffness']
         self.T_t_g = np.array(config['T_tool_gripper'])
         self.P_g_L = np.array(config['P_gripper_MotorL'])
         self.P_g_R = np.array(config['P_gripper_MotorR'])
         self.init_vel = config['init_vel']
         self.init_acc = config['init_acc']
+        #parameters for scooping
+        self.smack_vel = config['smack_vel']
+        self.smack_acc = config['smack_acc']
+        self.slow_dist = config['slow_dist']
+        self.lift_vel = config['lift_vel']
+        self.lift_dist = config['lift_dist']
+        self.fg_scp_stiff = config['finger_scoop_stiffness']
+        self.tb_scp_stiff = config['thumb_scoop_stiffness']
 
 
-    def initialize_gripper_pose(self, object_2D_pose):
-        ''' Initialize robot pose before smack and scoop with the gripper pose setting above the object
+    def initialize_pose(self, object_2D_pose):
+        ''' Initialize robot pose before scooping with the gripper setting above the object
         Parameters:
             object_2D_pose(tuple): (x_obj, y_obj, q_obj) object pose in x-y plane of ur10 base frame 
                 x_obj(m): x coordinate of object's center
@@ -63,8 +74,8 @@ class HighSpeedScooping:
         P_L_F = P_g_F - self.P_g_L
         P_R_T = P_g_T - self.P_g_R
         self.ddh.arm()
-        self.ddh.set_stiffness(self.fg_stiff, 'L')
-        self.ddh.set_stiffness(self.tb_stiff, 'R')
+        self.ddh.set_stiffness(self.fg_pre_stiff, 'L')
+        self.ddh.set_stiffness(self.tb_pre_stiff, 'R')
         self.ddh.set_left_tip(tuple(P_L_F[:-1]))
         self.ddh.set_right_tip(tuple(P_R_T[:-1]))
 
@@ -86,13 +97,76 @@ class HighSpeedScooping:
         print("Setting pose: ")
         print(init_pose.pose_vector)
         self.ur.set_pose(init_pose, self.init_vel, self.init_acc)
+        self.is_init = True
 
     def simple_scoop(self):
         ''' Close the fingers directly after the collision is detected
         Parameters:
         Returns:
         '''
-        return
+        spd_collide = 0.0 # speed at collision
+        pos_collide = 0.0 # position at collision
+        acc_slow = 0.0 # acceleration to slow down
+        pos_stop = 0.0 # position at zero speed
+        t_liftAcc = 0.0 # time of acceleration during lift
+        s_liftAcc = 0.0 # dist of accelertion during lift
+        t_liftConstSpd = 0.0 # time of constant speed during lift
+        pos_end = 0.0 # position after all movement ends
+
+        if not self.is_init:
+            print("Not initialized! Please run initialize_pose() first.")
+            return
+        else:
+            self.is_init = False
+
+        try: 
+            # initial right finger a2 angle
+            a2_init = self.ddh.right_a2 
+            # accelerate gripper to the surface
+            self.ur.speedl([0,0,-self.smack_vel,0,0,0],self.smack_acc,5)
+            # collision detection loop
+            while 1: 
+                # get current right finger a2 angle
+                a2_cur = self.ddh.right_a2 
+                if a2_cur - a2_init > 0.3:
+                    spd_collide = self.ur.get_tcp_speed(wait=False)[2]
+                    pos_collide = self.ur.getl()[2]
+                    print ("Collision detected!")
+                    # close fingers
+                    self.ddh.set_left_tip((157, 41))
+                    self.ddh.set_right_tip((157, -41))
+                    # slow down gripper according to given decelerating distance
+                    acc_slow = (spd_collide**2) / (2*self.slow_dist)
+                    self.ur.speedl([0,0,self.lift_vel,0,0,0],acc_slow,5)
+                    # wait until robot reach zero speed
+                    while self.ur.get_tcp_speed(wait=False)[2] < 0:
+                        continue
+                    pos_stop = self.ur.getl()[2]
+                    print("Reached zero speed!")
+                    # increase fingers stiffness
+                    self.ddh.set_stiffness(self.fg_scp_stiff, 'L')
+                    self.ddh.set_stiffness(self.tb_scp_stiff, 'R')
+                    # compute sleep time according to the distance to lift
+                    t_liftAcc = self.lift_vel / acc_slow
+                    s_liftAcc = 0.5 * acc_slow * t_liftAcc**2
+                    t_liftConstSpd = (self.lift_dist-s_liftAcc) / self.lift_vel
+                    # sleep until reached to lifted distance
+                    time.sleep(t_liftAcc + t_liftConstSpd)
+                    # terminate robot motion
+                    self.ur.stopl(5)
+                    break
+            time.sleep(1)
+            pos_end = self.ur.getl()[2]
+            print("==========Scooping completed!==========")
+            print("Colliding speed: {:.5f} m/s".format(spd_collide))
+            print("Decelerating distance: {:.5f} m".format(pos_collide - pos_stop))
+            print("Deceleration to lift: {:.5f} m/s^2".format(acc_slow))
+            print("Lifting sleep time: {:.2f} s".format(t_liftAcc + t_liftConstSpd))
+            print("Lifted distance: {:.5f} m".format(pos_end - pos_stop))
+        except:
+            self.ur.stopl(5)
+            print("Error occurred!")
+
 
     def reactive_scoop(self):
         #TODO: estimate gripper pose relative to surface after contacts
