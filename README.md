@@ -12,10 +12,10 @@ This repository contains the implementation of **High-Speed Scooping**, which re
 High-Speed Scooping is executed as follows:
 - **t = 0s**: The pose of the gripper and fingers is initialized above the object such that a lower angle of attack is attained for the thumb (right finger) by tilting the gripper.
 - **t = 0.75s**: The gripper accelerates towards the surface where the height is unknown.
-- **t = 1.15s**: The BLDC motors detect the collision through the fingers and the program triggers the deceleration to stop the gripper hitting to the surface. The fingers are commanded to close simultaneously with increased stiffness (position gain).
+- **t = 1.15s**: The BLDC motors detect the collision through the finger linkages and the program triggers the deceleration to stop the gripper hitting to the surface. The fingers are commanded to close simultaneously with increased stiffness (position gain of motor controller).
 - **t = 1.2s**: The thumb slides along the surface and penetrates below the object.
 - **t = 1.27s**: The gripper reaches zero velocity and accelerates upward. Meanwhile, the stiffness of the fingers increases again to secure the grasp.
-- **t = 1.48s**: The gripper lifts up from the surface to compele the task. 
+- **t = 1.48s**: The gripper lifts up from the surface to complete the task. 
 
 <!-- The process of High-Speed Scooping consists of three steps as follows: 
 1. Initialize the pre-scooping pose of the gripper and fingers above the object such that the gripper is tilted to attain a lower angle of attack.
