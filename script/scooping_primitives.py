@@ -158,14 +158,15 @@ class HighSpeedScooping:
             time.sleep(1)
             pos_end = self.ur.getl()[2]
             print("==========Scooping completed!==========")
-            print("Colliding speed: {:.5f} m/s".format(spd_collide))
-            print("Decelerating distance: {:.5f} m".format(pos_collide - pos_stop))
-            print("Deceleration to lift: {:.5f} m/s^2".format(acc_slow))
-            print("Lifting sleep time: {:.2f} s".format(t_liftAcc + t_liftConstSpd))
+            print("Speed at collision: {:.5f} m/s".format(spd_collide))
+            print("Distance to decelerate: {:.5f} m".format(pos_collide - pos_stop))
+            print("Deceleration for lifting: {:.5f} m/s^2".format(acc_slow))
+            print("Slept time for lifting: {:.2f} s".format(t_liftAcc + t_liftConstSpd))
             print("Lifted distance: {:.5f} m".format(pos_end - pos_stop))
-        except:
+        except Exception as err:
             self.ur.stopl(5)
-            print("Error occurred!")
+            print("Error occurred:")
+            print(err)
 
 
     def reactive_scoop(self):
