@@ -12,11 +12,11 @@ from odrive.enums import *
 import yaml
 
 
-def arm(axis, gain, BW):
+def arm(axis, pos_gain, vel_gain, BW):
     axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH
     axis.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-    axis.controller.config.pos_gain = gain
-    axis.controller.config.vel_gain = 1
+    axis.controller.config.pos_gain = pos_gain
+    axis.controller.config.vel_gain = vel_gain
     axis.controller.config.input_filter_bandwidth = BW
 
 def disarm(axis):
@@ -24,6 +24,9 @@ def disarm(axis):
 
 def set_pos_gain(axis, pos_gain):
     axis.controller.config.pos_gain = pos_gain 
+
+def set_vel_gain(axis, vel_gain):
+    axis.controller.config.vel_gain = vel_gain 
 
 def set_input_bandwidth(axis, BW):
     axis.controller.config.input_filter_bandwidth = BW
@@ -116,17 +119,35 @@ class DDGripper(object):
         # self.pub_gripper_state = rospy.Publisher('/ddh/state', GripperState, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.02), self.refresh)
 
-    def arm(self, gain = 250, BW = 500):
-        arm(self.finger_L.axis0, gain, BW)
-        arm(self.finger_L.axis1, gain, BW)
-        arm(self.finger_R.axis0, gain, BW)
-        arm(self.finger_R.axis1, gain, BW)
+    def arm(self, pos_gain = 250, vel_gain = 1, BW = 500, finger = 'LR'):
+        if finger == 'LR':
+            arm(self.finger_L.axis0, pos_gain, vel_gain, BW)
+            arm(self.finger_L.axis1, pos_gain, vel_gain, BW)
+            arm(self.finger_R.axis0, pos_gain, vel_gain, BW)
+            arm(self.finger_R.axis1, pos_gain, vel_gain, BW)
+        elif finger == 'L':
+            arm(self.finger_L.axis0, pos_gain, vel_gain, BW)
+            arm(self.finger_L.axis1, pos_gain, vel_gain, BW)
+        elif finger == 'R':
+            arm(self.finger_R.axis0, pos_gain, vel_gain, BW)
+            arm(self.finger_R.axis1, pos_gain, vel_gain, BW)
+        else:
+            print("Invalid finger argument.")
 
-    def disarm(self):
-        disarm(self.finger_L.axis0)
-        disarm(self.finger_L.axis1)
-        disarm(self.finger_R.axis0)
-        disarm(self.finger_R.axis1)
+    def disarm(self, finger = 'LR'):
+        if finger == 'LR':
+            disarm(self.finger_L.axis0)
+            disarm(self.finger_L.axis1)
+            disarm(self.finger_R.axis0)
+            disarm(self.finger_R.axis1)
+        elif finger == 'L':
+            disarm(self.finger_L.axis0)
+            disarm(self.finger_L.axis1)
+        elif finger == 'R':
+            disarm(self.finger_R.axis0)
+            disarm(self.finger_R.axis1)
+        else:
+            print("Invalid finger argument.")
 
     def set_stiffness(self, gain, finger = 'LR'):
         if finger == 'LR':
@@ -140,6 +161,21 @@ class DDGripper(object):
         elif finger == 'R':
             set_pos_gain(self.finger_R.axis0, gain)
             set_pos_gain(self.finger_R.axis1, gain)
+        else:
+            print("Invalid finger argument.")
+
+    def set_vel_gain(self, gain, finger = 'LR'):
+        if finger == 'LR':
+            set_vel_gain(self.finger_L.axis0, gain)
+            set_vel_gain(self.finger_L.axis1, gain)
+            set_vel_gain(self.finger_R.axis0, gain)
+            set_vel_gain(self.finger_R.axis1, gain)
+        elif finger == 'L':
+            set_vel_gain(self.finger_L.axis0, gain)
+            set_vel_gain(self.finger_L.axis1, gain)
+        elif finger == 'R':
+            set_vel_gain(self.finger_R.axis0, gain)
+            set_vel_gain(self.finger_R.axis1, gain)
         else:
             print("Invalid finger argument.")
 
