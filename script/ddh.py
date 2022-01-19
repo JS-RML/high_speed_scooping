@@ -179,11 +179,20 @@ class DDGripper(object):
         else:
             print("Invalid finger argument.")
 
-    def set_bandwidth(self, BW):
-        set_input_bandwidth(self.finger_L.axis0, BW)
-        set_input_bandwidth(self.finger_L.axis1, BW)
-        set_input_bandwidth(self.finger_R.axis0, BW)
-        set_input_bandwidth(self.finger_R.axis1, BW)
+    def set_bandwidth(self, BW, finger == 'LR'):
+        if finger == 'LR':
+            set_input_bandwidth(self.finger_L.axis0, BW)
+            set_input_bandwidth(self.finger_L.axis1, BW)
+            set_input_bandwidth(self.finger_R.axis0, BW)
+            set_input_bandwidth(self.finger_R.axis1, BW)
+        elif finger == 'L':
+            set_input_bandwidth(self.finger_L.axis0, BW)
+            set_input_bandwidth(self.finger_L.axis1, BW)
+        elif finger == 'R':
+            set_input_bandwidth(self.finger_R.axis0, BW)
+            set_input_bandwidth(self.finger_R.axis1, BW)
+        else:
+            print("Invalid finger argument.")
 
     @property
     def motor_pos_r0(self):
