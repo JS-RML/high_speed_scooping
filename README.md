@@ -71,8 +71,8 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 
 - **Initial Configuration (t = 0s)**: The arm carries the gripper such that it is placed above the object to pick. The gripper is oriented such that the thumb's face forms a desired nonzero angle of attack (less than 90 degrees) with the ground surface. *Mark the angle of attack in the figure*
 - **Approach (t = 0.75s)**: The gripper is moved towards the ground surface, whose height does not need to be known a priori.
-- **Interaction with the Environment (t = 1.15s)**: The gripper detects a collision between its digits and the ground surface by measuring the displacement of the digit linkages. As soon as the collision occurs, (1) the arm moving downward is accelerated upward to stop it from hitting the surface and (2)  The BLDC motors detect the collision through the digit's linkages and the program triggers the deceleration to stop the arm hitting to the surface. Both digits are commanded to close simultaneously with increased stiffness (proportional gain of the motor's position control loop).
-- **t = 1.20s**: The finger presses on the object while the thumb slides along the surface and penetrates below the object.
+- **Interaction with the Environment (t = 1.15s)**: The gripper detects a collision between its digits and the ground surface by measuring the displacement of the digit linkages. As soon as the collision occurs, the arm moving downward is accelerated upward to stop it from hitting the surface.
+- **Interaction with the Object (t = 1.20s)**: In the meantime, the gripper closes by moving the thumb towards the finger with higher proportional/derivative gains, which will render the digit linkages stiffer. The finger is shown to press down on the object while the thumb slides on the surface towards the finger and eventually penetrates under the object.
 - **t = 1.27s**: The arm reaches zero velocity and accelerates upward. Meanwhile, the stiffness of the fingers increases for the second time to secure the grasp.
 - **t = 1.48s**: The arm lifts up from the surface to complete the task. 
 
