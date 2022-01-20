@@ -20,7 +20,7 @@ This repository contains the software implementation of **High-Speed Scooping** 
 ### 2.1 Hardware
 - [**Universal Robot UR10**](https://www.universal-robots.com/products/ur10-robot/): Industrial Robot Arm 
 - [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): Our direct-drive gripper inspired from the paper below: 
-- *add a citation to Mason's paper.*
+*add a citation to Mason's paper.*
 
 ### 2.2 Software
 Our software is implemented with **python3** and tested on **Ubuntu 16.04**.
