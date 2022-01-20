@@ -3,7 +3,6 @@ import time
 from math import sin, cos, radians, pi
 import numpy as np
 import yaml
-import urx
 import math3d as m3d
 import odrive
 
