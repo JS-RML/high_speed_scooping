@@ -27,9 +27,10 @@ This repository contains the software implementation of **High-Speed Scooping** 
 Our software is implemented with **python3** and tested on **Ubuntu 16.04**.
 
 To install python3 and dependencies on Linux:
-```
+```shell
 sudo apt install python3 python3-pip
-sudo pip3 install urx odrive jupyter
+cd high_speed_scooping
+pip3 install -r requirements.txt
 ```
 **Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. 
 *This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.*
