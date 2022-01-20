@@ -30,7 +30,7 @@ To install python3 and dependencies on Linux:
 sudo apt install python3 python3-pip
 sudo pip3 install urx odrive jupyter
 ```
-**Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. To do this, replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). The path to the original urx package: 
+**Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. To do this, replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). *This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.* The path to the original urx package: 
 - For local environment: `/usr/local/lib/python3.x/dist-packages/urx`
 - For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx`
 
