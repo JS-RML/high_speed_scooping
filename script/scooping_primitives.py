@@ -40,6 +40,7 @@ class HighSpeedScooping:
         self.P_g_R = np.array(config['P_gripper_MotorR'])
         self.init_vel = config['init_vel']
         self.init_acc = config['init_acc']
+        self.digits_spd = config['digits_speed'] 
         # parameters for scooping
         self.smack_vel = config['smack_vel']
         self.smack_acc = config['smack_acc']
@@ -73,9 +74,10 @@ class HighSpeedScooping:
         # F, T target position in their motor frame
         P_L_F = P_g_F - self.P_g_L
         P_R_T = P_g_T - self.P_g_R
-        self.ddh.arm()
-        self.ddh.set_stiffness(self.fg_pre_stiff, 'L')
-        self.ddh.set_stiffness(self.tb_pre_stiff, 'R')
+        self.ddh.arm(pos_gain=self.fg_pre_stiff, BW=self.digits_spd, finger='L')
+        self.ddh.arm(pos_gain=self.tb_pre_stiff, BW=self.digits_spd, finger='R')
+        # self.ddh.set_stiffness(self.fg_pre_stiff, 'L')
+        # self.ddh.set_stiffness(self.tb_pre_stiff, 'R')
         self.ddh.set_left_tip(tuple(P_L_F[:-1]))
         self.ddh.set_right_tip(tuple(P_R_T[:-1]))
 

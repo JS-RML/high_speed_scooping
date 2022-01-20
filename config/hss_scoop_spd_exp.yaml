@@ -1,25 +1,25 @@
 # object's geometry
-object_length: 43 # mm domino/oreo:43 x 7
-object_thickness: 3 # mm
+object_length: 33 # mm plastic card: 54mm acrylic obj: 33mm
+object_thickness: 0.75 # mm
 
 # prescooping parameters
 gripper_tilt: 60 # (degree) angle of the gripper
 gripper_height: 0.25 # (meter) initial height of gripper in world frame 
 contact_distance: 150 # (mm) dist from gripper frame to surface when fingers are in contact
-finger_prescoop_position: 0.7 # dimensionless F position on the object from the scooping edge
+finger_prescoop_position: 0.8 # dimensionless F position on the object from the scooping edge
 thumb_prescoop_position: 0.2 # dimensionless prescoop position away from the scooping edge
-gripper_center: 0.8 # gripper center line position on the object from the scooping edge
-finger_prescoop_stiffness: 30 # pos gain of finger before scoop
+gripper_center: 1.0 # gripper center line position on the object from the scooping edge
+finger_prescoop_stiffness: 60 # pos gain of finger before scoop
 thumb_prescoop_stiffness: 60 # pos gain of thumb before scoop
 init_vel: 0.05 # (m/s) velocity of tcp when initializing gripper pose
 init_acc: 0.05 # (m/s^2) acceleration...
-digits_speed: 500 # speed of the fingers (bandwidth of input position filter) 
+digits_speed: 20 # speed of the fingers (bandwidth of input position filter) 
 
 # smack and scoop parameters
-smack_vel: 0.3 # (m/s) velocity of tcp when approaching to the surface
-smack_acc: 0.3 # (m/s^2) acceleration...
-slow_dist: 0.01 # (meter) distance of gripper slowing down after collision
-lift_vel: 0.3 # (m/s) velocity of tcp when lifting the object up from the surface 
+smack_vel: 0.15 # (m/s) velocity of tcp when approaching to the surface
+smack_acc: 0.15 # (m/s^2) acceleration...
+slow_dist: 0.03 # (meter) distance of gripper slowing down after collision
+lift_vel: 0.15 # (m/s) velocity of tcp when lifting the object up from the surface 
 lift_dist: 0.2 # (meter) distance of gripper lifted off from the surface
 finger_scoop_stiffness: 100 # pos gain of finger after collision
 thumb_scoop_stiffness: 100 # pos gain of thumb after collision
