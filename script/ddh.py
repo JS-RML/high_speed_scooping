@@ -179,7 +179,7 @@ class DDGripper(object):
         else:
             print("Invalid finger argument.")
 
-    def set_bandwidth(self, BW, finger == 'LR'):
+    def set_bandwidth(self, BW, finger = 'LR'):
         if finger == 'LR':
             set_input_bandwidth(self.finger_L.axis0, BW)
             set_input_bandwidth(self.finger_L.axis1, BW)

@@ -40,7 +40,7 @@ class HighSpeedScooping:
         self.P_g_R = np.array(config['P_gripper_MotorR'])
         self.init_vel = config['init_vel']
         self.init_acc = config['init_acc']
-        #parameters for scooping
+        # parameters for scooping
         self.smack_vel = config['smack_vel']
         self.smack_acc = config['smack_acc']
         self.slow_dist = config['slow_dist']
