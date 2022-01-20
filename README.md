@@ -35,12 +35,12 @@ High-Speed Scooping is executed as follows:
 3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object. -->
 
 
-## 2. Prerequisites
-### 2.1 Hardware
+## 3. Prerequisites
+### 3.1 Hardware
 - [**Universal Robot UR10**](https://www.universal-robots.com/products/ur10-robot/): Industrial Robot Arm 
 - [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): BLDC-motor-actuated gripper reproduced from the paper: [Direct Drive Hands](http://www.roboticsproceedings.org/rss15/p53.pdf)
 
-### 2.2 Software
+### 3.2 Software
 Our software is implemented with **python3** and tested on **Ubuntu 16.04**.
 
 To install python3 and dependencies on Linux:
@@ -52,12 +52,12 @@ sudo pip3 install urx odrive jupyter
 - For local environment: `/usr/local/lib/python3.x/dist-packages/urx`
 - For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx`
 
-## 3. Run High-Speed Scooping
-### 3.1 Run with real robot
+## 4. Run High-Speed Scooping
+### 4.1 Run with real robot
 1. Start a Jupyter Notebook server in terminal `jupyter notebook`.
 2. Run `scooping_test.ipynb` through the Jupyter Notebook web interface.
 
-### 3.2 Changing execution parameters
+### 4.2 Changing execution parameters
 The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The parameters are as follows:
 - **Object Dimension**
     - ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
