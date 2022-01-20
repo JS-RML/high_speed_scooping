@@ -2,3 +2,4 @@ numpy
 yaml
 odrive
 math3d
+matplotlib
