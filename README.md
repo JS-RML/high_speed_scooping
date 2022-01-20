@@ -69,7 +69,7 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 <img src="media/hss_process.jpg" width="800"> 
 </p>
 
-- **t = 0s**: The pose of the gripper and digits is initialized above the object such that a lower angle of attack is attained for the thumb by tilting the gripper.
+- ** Initial Configuration (t = 0s)**: The pose of the gripper and digits is initialized above the object such that a lower angle of attack is attained for the thumb by tilting the gripper.
 - **t = 0.75s**: The arm accelerates towards the surface where the height is unknown.
 - **t = 1.15s**: The BLDC motors detect the collision through the digit's linkages and the program triggers the deceleration to stop the arm hitting to the surface. Both digits are commanded to close simultaneously with increased stiffness (proportional gain of the motor's position control loop).
 - **t = 1.20s**: The finger presses on the object while the thumb slides along the surface and penetrates below the object.
