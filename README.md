@@ -16,31 +16,12 @@ This repository contains the software implementation of **High-Speed Scooping** 
 <img src="media/snatch_card.gif" width="400"> 
 </p>
 
-## 2. Timeline of High-Speed Scooping
-<p align = "center">
-<img src="media/hss_process.jpg" width="800"> 
-</p>
-
-High-Speed Scooping is executed as follows:
-- **t = 0s**: The pose of the gripper and digits is initialized above the object such that a lower angle of attack is attained for the thumb by tilting the gripper.
-- **t = 0.75s**: The arm accelerates towards the surface where the height is unknown.
-- **t = 1.15s**: The BLDC motors detect the collision through the digit's linkages and the program triggers the deceleration to stop the arm hitting to the surface. Both digits are commanded to close simultaneously with increased stiffness (proportional gain of the motor's position control loop).
-- **t = 1.20s**: The finger presses on the object while the thumb slides along the surface and penetrates below the object.
-- **t = 1.27s**: The arm reaches zero velocity and accelerates upward. Meanwhile, the stiffness of the fingers increases for the second time to secure the grasp.
-- **t = 1.48s**: The arm lifts up from the surface to complete the task. 
-
-<!-- The process of High-Speed Scooping consists of three steps as follows: 
-1. Initialize the pre-scooping pose of the gripper and fingers above the object such that the gripper is tilted to attain a lower angle of attack.
-2. Accelerate the gripper towards the surface where the height is unknown.
-3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object. -->
-
-
-## 3. Prerequisites
-### 3.1 Hardware
+## 2. Prerequisites
+### 2.1 Hardware
 - [**Universal Robot UR10**](https://www.universal-robots.com/products/ur10-robot/): Industrial Robot Arm 
 - [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): BLDC-motor-actuated gripper reproduced from the paper: [Direct Drive Hands](http://www.roboticsproceedings.org/rss15/p53.pdf)
 
-### 3.2 Software
+### 2.2 Software
 Our software is implemented with **python3** and tested on **Ubuntu 16.04**.
 
 To install python3 and dependencies on Linux:
@@ -52,12 +33,12 @@ sudo pip3 install urx odrive jupyter
 - For local environment: `/usr/local/lib/python3.x/dist-packages/urx`
 - For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx`
 
-## 4. Run High-Speed Scooping
-### 4.1 Run with real robot
+## 3. Run High-Speed Scooping
+### 3.1 Run with real robot
 1. Start a Jupyter Notebook server in terminal `jupyter notebook`.
 2. Run `scooping_test.ipynb` through the Jupyter Notebook web interface.
 
-### 4.2 Changing execution parameters
+### 3.2 Changing execution parameters
 The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The parameters are as follows:
 - **Object Dimension**
     - ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
@@ -81,6 +62,25 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
     - ***lift_dist***: distance of gripper lifted off from the surface (<img src="https://render.githubusercontent.com/render/math?math=m">)
     - ***finger_scoop_stiffness***: position gain of finger after collision
     - ***thumb_scoop_stiffness***: position gain of thumb after collision
+
+## 4. Timeline of High-Speed Scooping
+<p align = "center">
+<img src="media/hss_process.jpg" width="800"> 
+</p>
+
+High-Speed Scooping is executed as follows:
+- **t = 0s**: The pose of the gripper and digits is initialized above the object such that a lower angle of attack is attained for the thumb by tilting the gripper.
+- **t = 0.75s**: The arm accelerates towards the surface where the height is unknown.
+- **t = 1.15s**: The BLDC motors detect the collision through the digit's linkages and the program triggers the deceleration to stop the arm hitting to the surface. Both digits are commanded to close simultaneously with increased stiffness (proportional gain of the motor's position control loop).
+- **t = 1.20s**: The finger presses on the object while the thumb slides along the surface and penetrates below the object.
+- **t = 1.27s**: The arm reaches zero velocity and accelerates upward. Meanwhile, the stiffness of the fingers increases for the second time to secure the grasp.
+- **t = 1.48s**: The arm lifts up from the surface to complete the task. 
+
+<!-- The process of High-Speed Scooping consists of three steps as follows: 
+1. Initialize the pre-scooping pose of the gripper and fingers above the object such that the gripper is tilted to attain a lower angle of attack.
+2. Accelerate the gripper towards the surface where the height is unknown.
+3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object. -->
+
 
 <!-- ## 4. Background -->
 
