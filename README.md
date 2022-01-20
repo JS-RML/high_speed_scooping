@@ -16,7 +16,7 @@ This repository contains the software implementation of **High-Speed Scooping** 
 <img src="media/snatch_card.gif" width="400"> 
 </p>
 
-**Timeline of scooping process:**
+## 2. Timeline of High-Speed Scooping
 <p align = "center">
 <img src="media/hss_process.jpg" width="800"> 
 </p>
