@@ -20,6 +20,7 @@ This repository contains the software implementation of **High-Speed Scooping** 
 ### 2.1 Hardware
 - [**Universal Robot UR10**](https://www.universal-robots.com/products/ur10-robot/): Industrial Robot Arm 
 - [**Direct-Drive Hand (DDH)**](https://github.com/HKUST-RML/ddh_hardware): Our direct-drive gripper inspired from the paper below: 
+*add a citation to Mason's paper.*
     - A. Bhatia, A. M. Johnson, and M. T. Mason, “ Direct Drive Hands: Force-Motion Transparency in Gripper Design, ” in *Proc. Robotics: Science and Systems,* 2019.
 
 ### 2.2 Software
@@ -30,9 +31,18 @@ To install python3 and dependencies on Linux:
 sudo apt install python3 python3-pip
 sudo pip3 install urx odrive jupyter
 ```
-**Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. To do this, replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). *This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.* The path to the original urx package: 
+**Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. 
+*This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.*
+To do this, add the following lines before `import urx` in the python script:
+```python
+import sys
+sys.path.insert(0,'..')
+import urx
+```
+This will import the urx package from `/high_speed_scooping/urx` instead of the installed one.
+<!-- replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). *This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.* The path to the original urx package: 
 - For local environment: `/usr/local/lib/python3.x/dist-packages/urx`
-- For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx`
+- For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx` -->
 
 ## 3. Run High-Speed Scooping
 ### 3.1 Run with real robot
