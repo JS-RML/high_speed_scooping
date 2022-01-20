@@ -10,7 +10,8 @@ from numpy import deg2rad, rad2deg
 import odrive
 from odrive.enums import *
 import yaml
-
+import threading
+import matplotlib.pyplot as plt
 
 def arm(axis, pos_gain, vel_gain, BW):
     axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH
@@ -118,6 +119,67 @@ class DDGripper(object):
         # self.pub_odrive_R = rospy.Publisher('/ddh/odrive/R', OdriveStamped, queue_size=10)
         # self.pub_gripper_state = rospy.Publisher('/ddh/state', GripperState, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.02), self.refresh)
+
+        #thread for logging
+        self.keep_logging = False
+        self.log_rate = 100
+        self.logged_data = []
+        self.logging_thread = None
+
+    def logging_job(self):
+        while self.keep_logging:
+            time.sleep(1.0/self.log_rate)
+            data = {
+                'L0': self.link_pos_l0,
+                'L1': self.link_pos_l1,
+                'R0': self.link_pos_r0,
+                'R1': self.link_pos_r1,
+                't': round(time.time() * 1000)
+            }
+            self.logged_data.append(data)
+
+    @property
+    def logged(self):
+        return self.logging_thread is not None
+
+    @logged.setter
+    def logged(self, log):
+        if log and not self.logged:
+            self.log_start()
+        if not log and self.logged:
+            self.log_stop()
+    
+    def log_start(self):
+        self.logged_data.clear()
+        self.keep_logging = True
+        self.logging_thread = threading.Thread(target=self.logging_job)
+        self.logging_thread.start()
+        print('Start logging')
+
+    def log_stop(self):
+        self.keep_logging = False
+        self.logging_thread.join()
+        self.logging_thread = None
+        print('Stop logging')
+
+    def display_log(self):
+        time = []
+        r0 = []
+        r1 = []
+        l0 = []
+        l1 = []
+        for d in self.logged_data:
+            l0.append(d['L0'])
+            l1.append(d['L1'])
+            r0.append(d['R0'])
+            r1.append(d['R1'])
+            time.append(d['t'])
+        plt.plot(time, l0, label='L0')
+        plt.plot(time, l1, label='L1')
+        plt.plot(time, r0, label='R0')
+        plt.plot(time, r1, label='R1')
+        plt.legend()
+        plt.show()
 
     def arm(self, pos_gain = 250, vel_gain = 1, BW = 500, finger = 'LR'):
         if finger == 'LR':

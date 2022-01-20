@@ -4,7 +4,6 @@ from math import sin, cos, radians, pi
 import numpy as np
 import yaml
 import math3d as m3d
-import odrive
 
 
 
