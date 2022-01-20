@@ -73,8 +73,8 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 - **Approach (t = 0.75s)**: The gripper is moved towards the ground surface, whose height does not need to be known a priori.
 - **Interaction with the Environment (t = 1.15s)**: The gripper detects a collision between its digits and the ground surface by measuring the displacement of the digit linkages. As soon as the collision occurs, the arm moving downward is accelerated upward to stop it from hitting the surface.
 - **Interaction with the Object (t = 1.20s)**: In the meantime, the gripper closes by moving the thumb towards the finger with higher proportional/derivative gains, which will render the digit linkages stiffer. The finger is shown to press down on the object while the thumb slides on the surface towards the finger and eventually penetrates under the object.
-- **t = 1.27s**: The arm reaches zero velocity and accelerates upward. Meanwhile, the stiffness of the fingers increases for the second time to secure the grasp.
-- **t = 1.48s**: The arm lifts up from the surface to complete the task. 
+- **Pinch Grasp (t = 1.27s)**: Finally, a secure pinch grasp is obtained and the arm starts moving upward. Meanwhile, The stiffness of the digit linkages (that is, the control gains) is increased further, to secure the grasp.
+- **Lifting (t = 1.48s)**: The gripper takes off from the surface to complete the task. 
 
 <!-- The process of High-Speed Scooping consists of three steps as follows: 
 1. Initialize the pre-scooping pose of the gripper and fingers above the object such that the gripper is tilted to attain a lower angle of attack.
