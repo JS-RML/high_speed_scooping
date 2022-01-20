@@ -1,0 +1,4 @@
+numpy
+yaml
+odrive
+math3d
