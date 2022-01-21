@@ -1,9 +1,9 @@
 # object's geometry
-object_length: 33 # mm plastic card: 54mm acrylic obj: 33mm
+object_length: 33 # mm plastic card: 54mm, acrylic obj: 33mm
 object_thickness: 0.75 # mm
 
 # prescooping parameters
-gripper_tilt: 60 # (degree) angle of the gripper
+gripper_tilt: 50 # (degree) angle of the gripper
 gripper_height: 0.25 # (meter) initial height of gripper in world frame 
 contact_distance: 150 # (mm) dist from gripper frame to surface when fingers are in contact
 finger_prescoop_position: 0.8 # dimensionless F position on the object from the scooping edge
