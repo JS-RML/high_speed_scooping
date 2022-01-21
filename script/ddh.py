@@ -164,7 +164,7 @@ class DDGripper(object):
         self.logging_thread = None
         print('Stop logging')
 
-    def display_log(self, save_plot = False):
+    def display_log(self, grip_theta, save_plot = False):
         log_time = []
         r0 = []
         r1 = []
@@ -176,7 +176,7 @@ class DDGripper(object):
             l1.append(d['L1'])
             r0.append(d['R0'])
             r1.append(d['R1'])
-            psi.append(90+d['phi'])
+            psi.append(d['phi'] + grip_theta) # angle of attack
             log_time.append(d['t']-self.logged_data[0]['t']) # relative time from log starts
         # plot motor angle
         joint_fig = plt.figure(1)
