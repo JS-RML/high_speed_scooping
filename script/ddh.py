@@ -12,6 +12,7 @@ from odrive.enums import *
 import yaml
 import threading
 import matplotlib.pyplot as plt
+import os
 
 def arm(axis, pos_gain, vel_gain, BW):
     axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH
@@ -134,6 +135,7 @@ class DDGripper(object):
                 'L1': self.link_pos_l1,
                 'R0': self.link_pos_r0,
                 'R1': self.link_pos_r1,
+                'phi': self.right_phi,
                 't': round(time.time() * 1000)
             }
             self.logged_data.append(data)
@@ -162,23 +164,46 @@ class DDGripper(object):
         self.logging_thread = None
         print('Stop logging')
 
-    def display_log(self):
-        time = []
+    def display_log(self, save_plot = False):
+        log_time = []
         r0 = []
         r1 = []
         l0 = []
         l1 = []
+        psi = []
         for d in self.logged_data:
             l0.append(d['L0'])
             l1.append(d['L1'])
             r0.append(d['R0'])
             r1.append(d['R1'])
-            time.append(d['t'])
-        plt.plot(time, l0, label='L0')
-        plt.plot(time, l1, label='L1')
-        plt.plot(time, r0, label='R0')
-        plt.plot(time, r1, label='R1')
-        plt.legend()
+            psi.append(90+d['phi'])
+            log_time.append(d['t']-self.logged_data[0]['t']) # relative time from log starts
+        # plot motor angle
+        joint_fig = plt.figure(1)
+        joint_plot = joint_fig.add_subplot(1,1,1)
+        joint_plot.plot(log_time, l0, label='L0')
+        joint_plot.plot(log_time, l1, label='L1')
+        joint_plot.plot(log_time, r0, label='R0')
+        joint_plot.plot(log_time, r1, label='R1')
+        joint_plot.legend(loc='upper right').get_frame().set_linewidth(1.0)
+        joint_plot.set_title("Readings of motor angles")
+        joint_plot.set_ylabel("Angle (degree)")
+        joint_plot.set_xlabel("Time (ms)")
+        joint_plot.grid(True)
+        # plot angle of attack
+        psi_fig = plt.figure(2)
+        psi_plot = psi_fig.add_subplot(1,1,1)
+        psi_plot.plot(log_time, psi)
+        psi_plot.set_title("Readings of psi (angle of attack)")
+        psi_plot.set_ylabel("Angle (degree)")
+        psi_plot.set_xlabel("Time (ms)")
+        psi_plot.grid(True)
+        if save_plot: 
+            currentTime = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
+            save_dir = 'plots/'+str(currentTime)
+            os.makedirs(save_dir)
+            joint_fig.savefig(save_dir + '/joint.png')
+            psi_fig.savefig(save_dir + '/psi.png')
         plt.show()
 
     def arm(self, pos_gain = 250, vel_gain = 1, BW = 500, finger = 'LR'):
