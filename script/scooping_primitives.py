@@ -133,8 +133,8 @@ class HighSpeedScooping:
                     pos_collide = self.ur.getl()[2]
                     print ("Collision detected!")
                     # close fingers
-                    self.ddh.set_left_tip((157, 41))
-                    self.ddh.set_right_tip((157, -41))
+                    self.ddh.set_left_tip((155, 45)) #157, 41
+                    self.ddh.set_right_tip((155, -45)) #157, -41
                     # slow down gripper according to given decelerating distance
                     acc_slow = (spd_collide**2) / (2*self.slow_dist)
                     self.ur.speedl([0,0,self.lift_vel,0,0,0],acc_slow,5)

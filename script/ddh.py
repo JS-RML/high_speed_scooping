@@ -186,7 +186,6 @@ class DDGripper(object):
         if self.commanded_time != 0:
             self.commanded_time = self.commanded_time - self.logged_data[0]['t']
             print("Commanded time: {} ms".format(self.commanded_time))
-        print(psi)
         # creat subsplots
         fig, ax = plt.subplots(1,2)
         # plot motor angle
