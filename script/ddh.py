@@ -123,6 +123,8 @@ class DDGripper(object):
 
         #thread for logging
         self.keep_logging = False
+        self.commanded = False
+        self.commanded_time = 0
         self.log_rate = 100
         self.logged_data = []
         self.logging_thread = None
@@ -139,6 +141,9 @@ class DDGripper(object):
                 't': round(time.time() * 1000)
             }
             self.logged_data.append(data)
+            if self.commanded:
+                self.commanded_time = data['t']
+                self.commanded = False
 
     @property
     def logged(self):
@@ -178,6 +183,10 @@ class DDGripper(object):
             r1.append(d['R1'])
             psi.append(d['phi'] + grip_theta) # angle of attack
             log_time.append(d['t']-self.logged_data[0]['t']) # relative time from log starts
+        if self.commanded_time != 0:
+            self.commanded_time = self.commanded_time - self.logged_data[0]['t']
+            print("Commanded time: {} ms".format(self.commanded_time))
+        print(psi)
         # creat subsplots
         fig, ax = plt.subplots(1,2)
         # plot motor angle
@@ -185,6 +194,7 @@ class DDGripper(object):
         ax[0].plot(log_time, l1, label='L1')
         ax[0].plot(log_time, r0, label='R0')
         ax[0].plot(log_time, r1, label='R1')
+        if self.commanded_time != 0: ax[0].axvline(x=self.commanded_time, color='darkgray', linewidth='1.8', linestyle='--')
         ax[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax[0].set_title("Readings of motor angles")
         ax[0].set_ylabel("Angle (degree)")
@@ -192,6 +202,7 @@ class DDGripper(object):
         ax[0].grid(True)
         # plot angle of attack
         ax[1].plot(log_time, psi)
+        if self.commanded_time != 0: ax[1].axvline(x=self.commanded_time, color='darkgray', linewidth='1.8' ,linestyle='--')
         ax[1].set_title("Readings of psi (angle of attack)")
         ax[1].set_ylabel("Angle (degree)")
         ax[1].set_xlabel("Time (ms)")
@@ -202,6 +213,7 @@ class DDGripper(object):
             os.makedirs(save_dir)
             fig.savefig(save_dir + '/joint_psi.png')
         plt.show()
+        self.commanded_time = 0
 
     def arm(self, pos_gain = 250, vel_gain = 1, BW = 500, finger = 'LR'):
         if finger == 'LR':
@@ -513,6 +525,7 @@ class DDGripper(object):
     def set_left_tip(self, pos):
         print("Setting left tip:", pos)
         try:
+            self.commanded = True
             cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'L')
         except:
             print('Target position out of finger workspace!')
@@ -522,6 +535,7 @@ class DDGripper(object):
     def set_right_tip(self, pos):
         print("Setting right tip:", pos)
         try:
+            self.commanded = True
             cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'R')
         except:
             print('Target position out of finger workspace!')
@@ -581,16 +595,17 @@ class DDGripper(object):
 if __name__ == "__main__":
     # rospy.init_node('ddh_driver_node')
     gripper = DDGripper("ddh_scooping")
-    gripper.arm()
+    # gripper.arm()
     # gripper.startup_dance()
     # gripper.set_left_tip((150,0))
     # gripper.set_right_tip((150,0))
-    gripper.set_left_tip((157, 40))
-    gripper.set_right_tip((157, -40))
-    # while 1:
-    #     print("=========================")
-    #     # print(gripper.left_tip_pos,gripper.right_tip_pos)
-    #     print((gripper.left_a2 + gripper.right_a2)/2)
-    #     time.sleep(0.2)
+    # gripper.set_left_tip((157, 40))
+    # gripper.set_right_tip((157, -40))
+    while 1:
+        print("=========================")
+        # print(gripper.left_tip_pos,gripper.right_tip_pos)
+        # print((gripper.left_a2 + gripper.right_a2)/2)
+        print(gripper.right_a3)
+        # time.sleep(0.2)
 
     # rospy.spin()
