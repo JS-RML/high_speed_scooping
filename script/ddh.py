@@ -342,11 +342,17 @@ class DDGripper(object):
 
     @property
     def left_finger_dist(self):
-        return self.geometry_l1*np.cos(deg2rad(self.left_a2)) + np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(self.left_a2)))**2)
+        distal_r = np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(self.left_a2)))**2)
+        if np.isnan(distal_r):
+            distal_r = 0
+        return self.geometry_l1*np.cos(deg2rad(self.left_a2)) + distal_r
 
     @property
     def right_finger_dist(self):
-        return self.geometry_l1*np.cos(deg2rad(self.right_a2)) + np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(self.right_a2)))**2)
+        distal_r = np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(self.right_a2)))**2)
+        if np.isnan(distal_r):
+            distal_r = 0
+        return self.geometry_l1*np.cos(deg2rad(self.right_a2)) + distal_r
 
     # position of distal joint (base joint of finger) in motor frame
 
