@@ -133,7 +133,7 @@ class HighSpeedScooping:
                     pos_collide = self.ur.getl()[2]
                     print ("Collision detected!")
                     # close fingers
-                    self.ddh.set_left_tip((155, 45)) #157, 41
+                    self.ddh.set_left_tip((155, 45)) #157, 41 #TODO: add to config
                     self.ddh.set_right_tip((155, -45)) #157, -41
                     # slow down gripper according to given decelerating distance
                     acc_slow = (spd_collide**2) / (2*self.slow_dist)
@@ -168,6 +168,9 @@ class HighSpeedScooping:
             print("Error occurred:")
             print(err)
 
+    def two_states_scoop(self):
+        #TODO: First set tip to gripper's center line horizontally, then close finger
+        return
 
     def reactive_scoop(self):
         #TODO: estimate gripper pose relative to surface after contacts
