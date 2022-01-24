@@ -84,7 +84,7 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 <img src="media/hss_process.jpg" width="800"> 
 </p>
 
-- **Initial Configuration (t = 0s)**: The arm carries the gripper such that it is placed above the object to pick. The gripper is oriented such that the thumb's face forms a desired nonzero angle of attack (less than 90 degrees) with the ground surface. *Mark the angle of attack in the figure*
+- **Initial Configuration (t = 0s)**: The arm carries the gripper such that it is placed above the object to pick. The gripper is oriented such that the thumb's face forms a desired nonzero angle of attack (less than 90 degrees) with the ground surface.
 - **Approach (t = 0.75s)**: The gripper is moved towards the ground surface, whose height does not need to be known a priori.
 - **Interaction with the Environment (t = 1.15s)**: The gripper detects a collision between its digits and the ground surface by measuring the displacement of the digit linkages. As soon as the collision occurs, the arm moving downward is accelerated upward to stop it from hitting the surface.
 - **Interaction with the Object (t = 1.20s)**: In the meantime, the gripper closes by moving the thumb towards the finger with higher proportional/derivative gains, which will render the digit linkages stiffer. The finger is shown to press down on the object while the thumb slides on the surface towards the finger and eventually penetrates under the object.
