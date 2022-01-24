@@ -31,15 +31,20 @@ sudo apt install python3 python3-pip
 cd high_speed_scooping
 pip3 install -r requirements.txt
 ```
-**Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. 
-*This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.*
-To do this, add the following lines before `import urx` in the python script:
+
+Our software takes advantage of the package `urx`. Instead of the default library, use our customized version from `/high_speed_scooping/urx` by executing
 ```python
 import sys
 sys.path.insert(0,'..')
 import urx
 ```
-This will import the urx package from `/high_speed_scooping/urx` instead of the installed one.
+It features *What are the changes? Is `get_tcp_speed()` the new method you created?*
+
+<!-- **Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. 
+*This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.*
+To do this, add the following lines before `import urx` in the python script:
+This will import the urx package from `/high_speed_scooping/urx` instead of the installed one.-->
+
 <!-- replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). *This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.* The path to the original urx package: 
 - For local environment: `/usr/local/lib/python3.x/dist-packages/urx`
 - For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx` -->
