@@ -97,9 +97,15 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 2. Accelerate the gripper towards the surface where the height is unknown.
 3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object. -->
 
-![](media/readings_plot_light.png#gh-light-mode-only)
-![](media/readings_plot_dark.png#gh-dark-mode-only)
 
+<p align = "center">
+<img src="media/joint_plot_light.png#gh-light-mode-only" width="450"> 
+<img src="media/psi_plot_light.png#gh-light-mode-only" width="450"> 
+</p>
+<p align = "center">
+<img src="media/joint_plot_dark.png#gh-dark-mode-only" width="450"> 
+<img src="media/psi_plot_dark.png#gh-dark-mode-only" width="450"> 
+</p>
 
 <!-- ## 4. Background -->
 
