@@ -39,7 +39,7 @@ sys.path.insert(0,'..')
 import urx
 ```
 Our changes include *What are the changes? Is `get_tcp_speed()` the new method you created?*
-**Yes, I created the new function `get_tcp_speed()` since the default package doesn't provide the function of getting the tool speed.**
+**Yes, I created the new function `get_tcp_speed()` since the default package doesn't provide the function for getting the tool speed.**
 
 <!-- **Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. 
 *This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.*
