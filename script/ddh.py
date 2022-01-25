@@ -13,6 +13,7 @@ import yaml
 import threading
 import matplotlib.pyplot as plt
 import os
+import json
 
 def arm(axis, pos_gain, vel_gain, BW):
     axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH
@@ -124,10 +125,15 @@ class DDGripper(object):
         #thread for logging
         self.keep_logging = False
         self.commanded = False
-        self.commanded_time = 0
+        self.commanded_time = None
         self.log_rate = 100
         self.logged_data = []
         self.logging_thread = None
+        # commanded link angle
+        self.cmd_pos_l0 = None
+        self.cmd_pos_l1 = None
+        self.cmd_pos_r0 = None
+        self.cmd_pos_r1 = None
 
     def logging_job(self):
         while self.keep_logging:
@@ -137,6 +143,10 @@ class DDGripper(object):
                 'L1': self.link_pos_l1,
                 'R0': self.link_pos_r0,
                 'R1': self.link_pos_r1,
+                'L0_cmd': self.cmd_pos_l0,
+                'L1_cmd': self.cmd_pos_l1,
+                'R0_cmd': self.cmd_pos_r0,
+                'R1_cmd': self.cmd_pos_r1,
                 'phi': self.right_phi,
                 't': round(time.time() * 1000)
             }
@@ -175,25 +185,37 @@ class DDGripper(object):
         r1 = []
         l0 = []
         l1 = []
+        r0_cmd = []
+        r1_cmd = []
+        l0_cmd = []
+        l1_cmd = []
         psi = []
         for d in self.logged_data:
             l0.append(d['L0'])
             l1.append(d['L1'])
             r0.append(d['R0'])
             r1.append(d['R1'])
+            l0_cmd.append(d['L0_cmd'])
+            l1_cmd.append(d['L1_cmd'])
+            r0_cmd.append(d['R0_cmd'])
+            r1_cmd.append(d['R1_cmd'])
             psi.append(d['phi'] + grip_theta) # angle of attack
             log_time.append(d['t']-self.logged_data[0]['t']) # relative time from log starts
-        if self.commanded_time != 0:
+        if self.commanded_time is not None:
             self.commanded_time = self.commanded_time - self.logged_data[0]['t']
             print("Commanded time: {} ms".format(self.commanded_time))
         # creat subsplots
         fig, ax = plt.subplots(1,2)
         # plot motor angle
-        ax[0].plot(log_time, l0, label='L0')
-        ax[0].plot(log_time, l1, label='L1')
-        ax[0].plot(log_time, r0, label='R0')
-        ax[0].plot(log_time, r1, label='R1')
-        if self.commanded_time != 0: ax[0].axvline(x=self.commanded_time, color='darkgray', linewidth='1.8', linestyle='--')
+        ax[0].plot(log_time, l0, label='L0', color='tab:blue')
+        ax[0].plot(log_time, l1, label='L1', color='tab:orange')
+        ax[0].plot(log_time, r0, label='R0', color='tab:green')
+        ax[0].plot(log_time, r1, label='R1', color='tab:red')
+        ax[0].plot(log_time, l0_cmd, color='tab:blue', linestyle='--')
+        ax[0].plot(log_time, l1_cmd, color='tab:orange', linestyle='--')
+        ax[0].plot(log_time, r0_cmd, color='tab:green', linestyle='--')
+        ax[0].plot(log_time, r1_cmd, color='tab:red', linestyle='--')
+        if self.commanded_time is not None: ax[0].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5', linestyle='--')
         ax[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax[0].set_title("Readings of motor angles")
         ax[0].set_ylabel("Angle (degree)")
@@ -201,7 +223,7 @@ class DDGripper(object):
         ax[0].grid(True)
         # plot angle of attack
         ax[1].plot(log_time, psi)
-        if self.commanded_time != 0: ax[1].axvline(x=self.commanded_time, color='darkgray', linewidth='1.8' ,linestyle='--')
+        if self.commanded_time is not None: ax[1].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5' ,linestyle='--')
         ax[1].set_title("Readings of psi (angle of attack)")
         ax[1].set_ylabel("Angle (degree)")
         ax[1].set_xlabel("Time (ms)")
@@ -216,8 +238,11 @@ class DDGripper(object):
             subplt2 = ax[1].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
             fig.savefig(save_dir + '/joint.png', bbox_inches=subplt1.expanded(1.23, 1.23))
             fig.savefig(save_dir + '/psi.png', bbox_inches=subplt2.expanded(1.23, 1.23))
+            # save logged data
+            with open(save_dir + '/data.json', mode='w') as f:
+                json.dump(self.logged_data, f)
         plt.show()
-        self.commanded_time = 0
+        self.commanded_time = None
 
     def arm(self, pos_gain = 250, vel_gain = 1, BW = 500, finger = 'LR'):
         if finger == 'LR':
@@ -413,24 +438,28 @@ class DDGripper(object):
     # first control the position of individual links
 
     def set_link_pos_r0(self, link_pos):
+        self.cmd_pos_r0 = link_pos
         motor_pos = link_pos - self.R0_link
         motor_pos = motor_pos/360.
         motor_input = motor_pos * self.R0_dir + self.R0_offset
         self.finger_R.axis0.controller.input_pos = motor_input
 
     def set_link_pos_r1(self, link_pos):
+        self.cmd_pos_r1 = link_pos
         motor_pos = link_pos - self.R1_link
         motor_pos = motor_pos/360.
         motor_input = motor_pos * self.R1_dir + self.R1_offset
         self.finger_R.axis1.controller.input_pos = motor_input
 
     def set_link_pos_l0(self, link_pos):
+        self.cmd_pos_l0 = link_pos
         motor_pos = link_pos - self.L0_link
         motor_pos = motor_pos/360.
         motor_input = motor_pos * self.L0_dir + self.L0_offset
         self.finger_L.axis0.controller.input_pos = motor_input
 
     def set_link_pos_l1(self, link_pos):
+        self.cmd_pos_l1 = link_pos
         motor_pos = link_pos - self.L1_link
         motor_pos = motor_pos/360.
         motor_input = motor_pos * self.L1_dir + self.L1_offset
