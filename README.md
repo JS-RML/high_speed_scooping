@@ -99,12 +99,12 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 
 
 <p align = "center">
-<img src="media/joint_plot_light.png#gh-light-mode-only" width="450"> 
-<img src="media/psi_plot_light.png#gh-light-mode-only" width="450"> 
+<img src="media/joint_plot_light.png#gh-light-mode-only" width="420"> 
+<img src="media/psi_plot_light.png#gh-light-mode-only" width="420"> 
 </p>
 <p align = "center">
-<img src="media/joint_plot_dark.png#gh-dark-mode-only" width="450"> 
-<img src="media/psi_plot_dark.png#gh-dark-mode-only" width="450"> 
+<img src="media/joint_plot_dark.png#gh-dark-mode-only" width="420"> 
+<img src="media/psi_plot_dark.png#gh-dark-mode-only" width="420"> 
 </p>
 
 <!-- ## 4. Background -->
