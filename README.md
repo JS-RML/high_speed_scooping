@@ -102,7 +102,7 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 2. Accelerate the gripper towards the surface where the height is unknown.
 3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object. -->
 
-**Recorded motor angles during the scooping process**
+#### Recorded motor angles during the scooping process
 <!-- for light theme -->
 <p align = "center">
 <img src="media/plot_light/joint.png#gh-light-mode-only" width="600"> 
@@ -113,7 +113,7 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 <img src="media/plot_dark/joint.png#gh-dark-mode-only" width="600"> 
 <img src="media/plot_dark/psi.png#gh-dark-mode-only" width="600"> 
 </p>
-
+The dotted lines depict the commanded reference trajectory of motor joint angles. The gray dotted line indicate the moment when the robot detects the collision.
 
 ## Maintenance
 For any technical issues, please contact Ka Hei Mak (khmakac@connect.ust.hk)
