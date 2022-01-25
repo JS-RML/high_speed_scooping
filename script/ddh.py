@@ -210,7 +210,12 @@ class DDGripper(object):
             currentTime = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
             save_dir = 'plots/' + str(currentTime)
             os.makedirs(save_dir)
-            fig.savefig(save_dir + '/joint_psi.png')
+            # fig.savefig(save_dir + '/joint_psi.png')
+            # save fig as two subplots
+            subplt1 = ax[0].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            subplt2 = ax[1].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            fig.savefig(save_dir + '/joint.png', bbox_inches=subplt1.expanded(1.23, 1.23))
+            fig.savefig(save_dir + '/psi.png', bbox_inches=subplt2.expanded(1.23, 1.23))
         plt.show()
         self.commanded_time = 0
 
