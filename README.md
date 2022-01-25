@@ -32,14 +32,15 @@ cd high_speed_scooping
 pip3 install -r requirements.txt
 ```
 
-Our software takes advantage of the package `urx`. Instead of the default library, use our customized version from `/high_speed_scooping/urx` by executing
+Our software takes advantage of the package `urx`. Instead of the default library, use our customized version from `high_speed_scooping/urx` by executing
 ```python
 import sys
-sys.path.insert(0,'..')
-import urx
+sys.path.insert(0,'..') # Add the path /high_speed_scooping to the python environment at the first index
+import urx # Import urx from /high_speed_scooping 
 ```
-Our changes include *What are the changes? Is `get_tcp_speed()` the new method you created?*
-**Yes, I created the new function `get_tcp_speed()` since the default package doesn't provide the function for getting the tool speed.**
+Our version provides the method of getting the instantaneous tool speed by calling `get_tcp_speed()`, which allows us to control the decelerating distance of the robot.
+<!-- *What are the changes? Is `get_tcp_speed()` the new method you created?*
+**Yes, I created the new function `get_tcp_speed()` since the default package doesn't provide the function for getting the tool speed.** -->
 
 <!-- **Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. 
 *This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.*
@@ -52,8 +53,12 @@ This will import the urx package from `/high_speed_scooping/urx` instead of the 
 
 ## 3. Run High-Speed Scooping
 ### 3.1 Run with real robot
-1. Start a Jupyter Notebook server in terminal `jupyter notebook`.
-2. Run `scooping_test.ipynb` through the Jupyter Notebook web interface.
+1. Start a Jupyter Notebook server in terminal by executing
+```
+cd high_speed_scooping/script
+jupyter notebook
+```
+2. Run `scooping_example.ipynb` through the Jupyter Notebook web interface. Details about the API of our software available in [`script/scooping_example.ipynb`](script/scooping_example.ipynb)
 
 ### 3.2 Changing execution parameters
 The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The parameters are as follows:
