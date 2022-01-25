@@ -54,7 +54,7 @@ This will import the urx package from `/high_speed_scooping/urx` instead of the 
 ## 3. Run High-Speed Scooping
 ### 3.1 Run with real robot
 1. Start a Jupyter Notebook server in terminal by executing
-```
+```shell
 cd high_speed_scooping/script
 jupyter notebook
 ```
