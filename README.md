@@ -35,8 +35,8 @@ pip3 install -r requirements.txt
 Our software takes advantage of the package `urx`. Instead of the default library, use our customized version from `high_speed_scooping/urx` by executing
 ```python
 import sys
-sys.path.insert(0,'..') # Add the path /high_speed_scooping to the python environment at the first index
-import urx # Import urx from /high_speed_scooping 
+sys.path.insert(0,'..') # add the path /high_speed_scooping to the python environment at the first index
+import urx # import urx from /high_speed_scooping 
 ```
 Our version provides the method of getting the instantaneous tool speed by calling `get_tcp_speed()`, which allows us to control the decelerating distance of the robot.
 <!-- *What are the changes? Is `get_tcp_speed()` the new method you created?*
@@ -58,7 +58,7 @@ This will import the urx package from `/high_speed_scooping/urx` instead of the 
 cd high_speed_scooping/script
 jupyter notebook
 ```
-2. Run `scooping_example.ipynb` through the Jupyter Notebook web interface. Details about the API of our software available in [`script/scooping_example.ipynb`](script/scooping_example.ipynb)
+2. Run `HSS_example.ipynb` through the Jupyter Notebook web interface. Details about the API of our software available in [`script/HSS_example.ipynb`](script/HSS_example.ipynb)
 
 ### 3.2 Changing execution parameters
 The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The parameters are as follows:
