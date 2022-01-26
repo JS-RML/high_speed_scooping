@@ -47,6 +47,8 @@ class HighSpeedScooping:
         self.lift_dist = config['lift_dist']
         self.fg_scp_stiff = config['finger_scoop_stiffness']
         self.tb_scp_stiff = config['thumb_scoop_stiffness']
+        self.fg_gsp_stiff = config['finger_grasp_stiffness']
+        self.tb_gsp_stiff = config['thumb_grasp_stiffness']
 
 
     def initialize_pose(self, object_2D_pose):
@@ -132,7 +134,9 @@ class HighSpeedScooping:
                     spd_collide = self.ur.get_tcp_speed(wait=False)[2]
                     pos_collide = self.ur.getl()[2]
                     print ("Collision detected!")
-                    # close fingers
+                    # close fingers with different stiffness
+                    self.ddh.set_stiffness(self.fg_scp_stiff, 'L')
+                    self.ddh.set_stiffness(self.tb_scp_stiff, 'R')
                     self.ddh.set_left_tip((155, 45)) #157, 41 #TODO: add to config
                     self.ddh.set_right_tip((155, -45)) #157, -41
                     # slow down gripper according to given decelerating distance
@@ -143,9 +147,9 @@ class HighSpeedScooping:
                         continue
                     pos_stop = self.ur.getl()[2]
                     print("Reached zero speed!")
-                    # increase fingers stiffness
-                    self.ddh.set_stiffness(self.fg_scp_stiff, 'L')
-                    self.ddh.set_stiffness(self.tb_scp_stiff, 'R')
+                    # increase fingers stiffness for grasping
+                    self.ddh.set_stiffness(self.fg_gsp_stiff, 'L')
+                    self.ddh.set_stiffness(self.tb_gsp_stiff, 'R')
                     # compute sleep time according to the distance to lift
                     t_liftAcc = self.lift_vel / acc_slow
                     s_liftAcc = 0.5 * acc_slow * t_liftAcc**2
