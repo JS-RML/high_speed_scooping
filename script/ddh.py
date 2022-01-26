@@ -207,10 +207,10 @@ class DDGripper(object):
         # creat subsplots
         fig, ax = plt.subplots(1,2)
         # plot motor angle
-        ax[0].plot(log_time, l0, label='L0', color='tab:blue')
-        ax[0].plot(log_time, l1, label='L1', color='tab:orange')
-        ax[0].plot(log_time, r0, label='R0', color='tab:green')
-        ax[0].plot(log_time, r1, label='R1', color='tab:red')
+        ax[0].plot(log_time, l0, label='F0', color='tab:blue')
+        ax[0].plot(log_time, l1, label='F1', color='tab:orange')
+        ax[0].plot(log_time, r0, label='T0', color='tab:green')
+        ax[0].plot(log_time, r1, label='T1', color='tab:red')
         ax[0].plot(log_time, l0_cmd, color='tab:blue', linestyle='--')
         ax[0].plot(log_time, l1_cmd, color='tab:orange', linestyle='--')
         ax[0].plot(log_time, r0_cmd, color='tab:green', linestyle='--')
