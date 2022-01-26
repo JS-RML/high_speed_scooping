@@ -113,7 +113,7 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
 <img src="media/plot_dark/joint.png#gh-dark-mode-only" width="600"> 
 <img src="media/plot_dark/psi.png#gh-dark-mode-only" width="600"> 
 </p>
-The dotted lines depict the commanded reference trajectory of motor joint angles. The gray dotted line indicate the moment when the robot detects the collision.
+The dotted lines depict the commanded reference trajectory of motor joint angles. The gray dotted line indicates the moment when the robot detects the collision.
 
 ## Maintenance
 For any technical issues, please contact Ka Hei Mak (khmakac@connect.ust.hk)
