@@ -15,12 +15,9 @@ import matplotlib.pyplot as plt
 import os
 import json
 
-def arm(axis, pos_gain, vel_gain, BW):
+def arm(axis):
     axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH
     axis.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-    axis.controller.config.pos_gain = pos_gain
-    axis.controller.config.vel_gain = vel_gain
-    axis.controller.config.input_filter_bandwidth = BW
 
 def disarm(axis):
     axis.requested_state = AXIS_STATE_IDLE
@@ -134,6 +131,9 @@ class DDGripper(object):
         self.cmd_pos_l1 = None
         self.cmd_pos_r0 = None
         self.cmd_pos_r1 = None
+        # commanded stiffness
+        self.cmd_stiff_l = None
+        self.cmd_stiff_r = None
 
     def logging_job(self):
         while self.keep_logging:
@@ -147,6 +147,8 @@ class DDGripper(object):
                 'L1_cmd': self.cmd_pos_l1,
                 'R0_cmd': self.cmd_pos_r0,
                 'R1_cmd': self.cmd_pos_r1,
+                'L_stiff': self.cmd_stiff_l,
+                'R_stiff': self.cmd_stiff_r,
                 'phi': self.right_phi,
                 't': round(time.time() * 1000)
             }
@@ -189,6 +191,8 @@ class DDGripper(object):
         r1_cmd = []
         l0_cmd = []
         l1_cmd = []
+        l_stiff = []
+        r_stiff = []
         psi = []
         for d in self.logged_data:
             l0.append(d['L0'])
@@ -199,6 +203,8 @@ class DDGripper(object):
             l1_cmd.append(d['L1_cmd'])
             r0_cmd.append(d['R0_cmd'])
             r1_cmd.append(d['R1_cmd'])
+            l_stiff.append(d['L_stiff'])
+            r_stiff.append(d['R_stiff'])
             psi.append(d['phi'] + grip_theta) # angle of attack
             log_time.append(d['t']-self.logged_data[0]['t']) # relative time from log starts
         if self.commanded_time is not None:
@@ -245,79 +251,81 @@ class DDGripper(object):
         self.commanded_time = None
 
     def arm(self, pos_gain = 250, vel_gain = 1, BW = 500, finger = 'LR'):
+        set_axis = []
         if finger == 'LR':
-            arm(self.finger_L.axis0, pos_gain, vel_gain, BW)
-            arm(self.finger_L.axis1, pos_gain, vel_gain, BW)
-            arm(self.finger_R.axis0, pos_gain, vel_gain, BW)
-            arm(self.finger_R.axis1, pos_gain, vel_gain, BW)
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1,self.finger_R.axis0,self.finger_R.axis1]
         elif finger == 'L':
-            arm(self.finger_L.axis0, pos_gain, vel_gain, BW)
-            arm(self.finger_L.axis1, pos_gain, vel_gain, BW)
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1]
         elif finger == 'R':
-            arm(self.finger_R.axis0, pos_gain, vel_gain, BW)
-            arm(self.finger_R.axis1, pos_gain, vel_gain, BW)
+            set_axis = [self.finger_R.axis0,self.finger_R.axis1]
         else:
             print("Invalid finger argument.")
+            return
+        self.set_stiffness(pos_gain, finger)
+        self.set_vel_gain(vel_gain, finger)
+        self.set_bandwidth(BW, finger)
+        for ax in set_axis:
+            arm(ax)
 
     def disarm(self, finger = 'LR'):
+        set_axis = []
         if finger == 'LR':
-            disarm(self.finger_L.axis0)
-            disarm(self.finger_L.axis1)
-            disarm(self.finger_R.axis0)
-            disarm(self.finger_R.axis1)
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1,self.finger_R.axis0,self.finger_R.axis1]
         elif finger == 'L':
-            disarm(self.finger_L.axis0)
-            disarm(self.finger_L.axis1)
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1]
         elif finger == 'R':
-            disarm(self.finger_R.axis0)
-            disarm(self.finger_R.axis1)
+            set_axis = [self.finger_R.axis0,self.finger_R.axis1]
         else:
             print("Invalid finger argument.")
+            return
+        for ax in set_axis:
+            disarm(ax)
 
     def set_stiffness(self, gain, finger = 'LR'):
+        set_axis = []
         if finger == 'LR':
-            set_pos_gain(self.finger_L.axis0, gain)
-            set_pos_gain(self.finger_L.axis1, gain)
-            set_pos_gain(self.finger_R.axis0, gain)
-            set_pos_gain(self.finger_R.axis1, gain)
+            self.cmd_stiff_l = gain
+            self.cmd_stiff_r = gain
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1,self.finger_R.axis0,self.finger_R.axis1]
         elif finger == 'L':
-            set_pos_gain(self.finger_L.axis0, gain)
-            set_pos_gain(self.finger_L.axis1, gain)
+            self.cmd_stiff_l = gain
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1]
         elif finger == 'R':
-            set_pos_gain(self.finger_R.axis0, gain)
-            set_pos_gain(self.finger_R.axis1, gain)
+            self.cmd_stiff_r = gain
+            set_axis = [self.finger_R.axis0,self.finger_R.axis1]
         else:
             print("Invalid finger argument.")
+            return
+        for ax in set_axis:
+            set_pos_gain(ax, gain)
 
     def set_vel_gain(self, gain, finger = 'LR'):
+        set_axis = []
         if finger == 'LR':
-            set_vel_gain(self.finger_L.axis0, gain)
-            set_vel_gain(self.finger_L.axis1, gain)
-            set_vel_gain(self.finger_R.axis0, gain)
-            set_vel_gain(self.finger_R.axis1, gain)
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1,self.finger_R.axis0,self.finger_R.axis1]
         elif finger == 'L':
-            set_vel_gain(self.finger_L.axis0, gain)
-            set_vel_gain(self.finger_L.axis1, gain)
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1]
         elif finger == 'R':
-            set_vel_gain(self.finger_R.axis0, gain)
-            set_vel_gain(self.finger_R.axis1, gain)
+            set_axis = [self.finger_R.axis0,self.finger_R.axis1]
         else:
             print("Invalid finger argument.")
+            return
+        for ax in set_axis:
+            set_vel_gain(ax, gain)
 
     def set_bandwidth(self, BW, finger = 'LR'):
+        set_axis = []
         if finger == 'LR':
-            set_input_bandwidth(self.finger_L.axis0, BW)
-            set_input_bandwidth(self.finger_L.axis1, BW)
-            set_input_bandwidth(self.finger_R.axis0, BW)
-            set_input_bandwidth(self.finger_R.axis1, BW)
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1,self.finger_R.axis0,self.finger_R.axis1]
         elif finger == 'L':
-            set_input_bandwidth(self.finger_L.axis0, BW)
-            set_input_bandwidth(self.finger_L.axis1, BW)
+            set_axis = [self.finger_L.axis0,self.finger_L.axis1]
         elif finger == 'R':
-            set_input_bandwidth(self.finger_R.axis0, BW)
-            set_input_bandwidth(self.finger_R.axis1, BW)
+            set_axis = [self.finger_R.axis0,self.finger_R.axis1]
         else:
             print("Invalid finger argument.")
+            return
+        for ax in set_axis:
+            set_input_bandwidth(ax, BW)
 
     @property
     def motor_pos_r0(self):
@@ -634,17 +642,17 @@ class DDGripper(object):
 if __name__ == "__main__":
     # rospy.init_node('ddh_driver_node')
     gripper = DDGripper("ddh_scooping")
-    # gripper.arm()
+    gripper.arm()
     # gripper.startup_dance()
-    # gripper.set_left_tip((150,0))
-    # gripper.set_right_tip((150,0))
+    gripper.set_left_tip((150,0))
+    gripper.set_right_tip((150,0))
     # gripper.set_left_tip((157, 40))
     # gripper.set_right_tip((157, -40))
-    while 1:
-        print("=========================")
-        # print(gripper.left_tip_pos,gripper.right_tip_pos)
-        # print((gripper.left_a2 + gripper.right_a2)/2)
-        print(gripper.right_a3)
-        # time.sleep(0.2)
+    # while 1:
+    #     print("=========================")
+    #     # print(gripper.left_tip_pos,gripper.right_tip_pos)
+    #     # print((gripper.left_a2 + gripper.right_a2)/2)
+    #     # print(gripper.right_a3)
+    #     # time.sleep(0.2)
 
     # rospy.spin()
