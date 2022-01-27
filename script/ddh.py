@@ -121,11 +121,12 @@ class DDGripper(object):
 
         #thread for logging
         self.keep_logging = False
-        self.commanded = False
-        self.commanded_time = None
         self.log_rate = 100
         self.logged_data = []
         self.logging_thread = None
+        # commanded time
+        self.commanded = False
+        self.commanded_time = None
         # commanded link angle
         self.cmd_pos_l0 = None
         self.cmd_pos_l1 = None

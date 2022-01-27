@@ -21,6 +21,7 @@ class HighSpeedScooping:
                 print(exc)
 
         self.is_init = False
+        self.collided = False
         
         self.obj_l = config['object_length']
         self.obj_t = config['object_thickness']
@@ -131,6 +132,7 @@ class HighSpeedScooping:
                 # get current right finger a2 angle
                 a2_cur = self.ddh.right_a2 
                 if a2_cur - a2_init > 0.3:
+                    self.collided = True
                     spd_collide = self.ur.get_tcp_speed(wait=False)[2]
                     pos_collide = self.ur.getl()[2]
                     print ("Collision detected!")
@@ -167,6 +169,7 @@ class HighSpeedScooping:
             print("Deceleration for lifting: {:.5f} m/s^2".format(acc_slow))
             print("Slept time for lifting: {:.2f} s".format(t_liftAcc + t_liftConstSpd))
             print("Lifted distance: {:.5f} m".format(pos_end - pos_stop))
+            self.collided = False
         except Exception as err:
             self.ur.stopl(5)
             print("Error occurred:")
