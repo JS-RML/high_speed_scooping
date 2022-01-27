@@ -182,6 +182,9 @@ class DDGripper(object):
         print('Stop logging')
 
     def display_log(self, grip_theta, save_plot = False):
+        # plot_item = {} # dict of list
+        # for i in self.logged_data[0]:
+        #     plot_item[i] = []
         log_time = []
         r0 = []
         r1 = []
@@ -211,39 +214,50 @@ class DDGripper(object):
             self.commanded_time = self.commanded_time - self.logged_data[0]['t']
             print("Commanded time: {} ms".format(self.commanded_time))
         # creat subsplots
-        fig, ax = plt.subplots(1,2)
+        fig1, ax1 = plt.subplots(1,2)
+        fig2, ax2 = plt.subplots(1,2)
         # plot motor angle
-        ax[0].plot(log_time, l0, label='F0', color='tab:blue')
-        ax[0].plot(log_time, l1, label='F1', color='tab:orange')
-        ax[0].plot(log_time, r0, label='T0', color='tab:green')
-        ax[0].plot(log_time, r1, label='T1', color='tab:red')
-        ax[0].plot(log_time, l0_cmd, color='tab:blue', linestyle='--')
-        ax[0].plot(log_time, l1_cmd, color='tab:orange', linestyle='--')
-        ax[0].plot(log_time, r0_cmd, color='tab:green', linestyle='--')
-        ax[0].plot(log_time, r1_cmd, color='tab:red', linestyle='--')
-        if self.commanded_time is not None: ax[0].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5', linestyle='--')
-        ax[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
-        ax[0].set_title("Readings of motor angles")
-        ax[0].set_ylabel("Angle (degree)")
-        ax[0].set_xlabel("Time (ms)")
-        ax[0].grid(True)
+        ax1[0].plot(log_time, l0, label='F0', color='tab:blue')
+        ax1[0].plot(log_time, l1, label='F1', color='tab:orange')
+        ax1[0].plot(log_time, r0, label='T0', color='tab:green')
+        ax1[0].plot(log_time, r1, label='T1', color='tab:red')
+        ax1[0].plot(log_time, l0_cmd, color='tab:blue', linestyle='--')
+        ax1[0].plot(log_time, l1_cmd, color='tab:orange', linestyle='--')
+        ax1[0].plot(log_time, r0_cmd, color='tab:green', linestyle='--')
+        ax1[0].plot(log_time, r1_cmd, color='tab:red', linestyle='--')
+        if self.commanded_time is not None: ax1[0].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5', linestyle='--')
+        ax1[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
+        ax1[0].set_title("Readings of motor angles")
+        ax1[0].set_ylabel("Angle (degree)")
+        ax1[0].set_xlabel("Time (ms)")
+        ax1[0].grid(True)
         # plot angle of attack
-        ax[1].plot(log_time, psi)
-        if self.commanded_time is not None: ax[1].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5' ,linestyle='--')
-        ax[1].set_title("Readings of psi (angle of attack)")
-        ax[1].set_ylabel("Angle (degree)")
-        ax[1].set_xlabel("Time (ms)")
-        ax[1].grid(True)
+        ax1[1].plot(log_time, psi)
+        if self.commanded_time is not None: ax1[1].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5' ,linestyle='--')
+        ax1[1].set_title("Readings of psi (angle of attack)")
+        ax1[1].set_ylabel("Angle (degree)")
+        ax1[1].set_xlabel("Time (ms)")
+        ax1[1].grid(True)
+        # plot stiffness
+        ax2[0].plot(log_time, l_stiff, label='F_Kp')
+        ax2[0].plot(log_time, r_stiff, label='T_Kp')
+        if self.commanded_time is not None: ax2[0].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5' ,linestyle='--')
+        ax2[0].legend(loc='lower right').get_frame().set_linewidth(1.0)
+        ax2[0].set_title("Stiffness of fingers (proportional gain of position controller)")
+        ax2[0].set_ylabel("Gain ((turn/s) / turn)")
+        ax2[0].set_xlabel("Time (ms)")
+        ax2[0].grid(True)
         if save_plot: 
             currentTime = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
             save_dir = 'plots/' + str(currentTime)
             os.makedirs(save_dir)
-            # fig.savefig(save_dir + '/joint_psi.png')
-            # save fig as two subplots
-            subplt1 = ax[0].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-            subplt2 = ax[1].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-            fig.savefig(save_dir + '/joint.png', bbox_inches=subplt1.expanded(1.23, 1.23))
-            fig.savefig(save_dir + '/psi.png', bbox_inches=subplt2.expanded(1.23, 1.23))
+            # save two subplots as two figs
+            fig1sub1 = ax1[0].get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+            fig1sub2 = ax1[1].get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+            fig1.savefig(save_dir + '/joint.png', bbox_inches=fig1sub1.expanded(1.23, 1.23))
+            fig1.savefig(save_dir + '/psi.png', bbox_inches=fig1sub2.expanded(1.23, 1.23))
+            fig2sub1 = ax2[0].get_window_extent().transformed(fig2.dpi_scale_trans.inverted())
+            fig2.savefig(save_dir + '/gain.png', bbox_inches=fig2sub1.expanded(1.23, 1.23))
             # save logged data
             with open(save_dir + '/data.json', mode='w') as f:
                 json.dump(self.logged_data, f)
@@ -644,8 +658,8 @@ if __name__ == "__main__":
     gripper = DDGripper("ddh_scooping")
     gripper.arm()
     # gripper.startup_dance()
-    gripper.set_left_tip((150,0))
-    gripper.set_right_tip((150,0))
+    # gripper.set_left_tip((150,0))
+    # gripper.set_right_tip((150,0))
     # gripper.set_left_tip((157, 40))
     # gripper.set_right_tip((157, -40))
     # while 1:

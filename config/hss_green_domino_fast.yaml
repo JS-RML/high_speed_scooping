@@ -21,8 +21,8 @@ smack_acc: 0.4 # (m/s^2) acceleration...
 slow_dist: 0.02 # (meter) distance of gripper slowing down after collision
 lift_vel: 0.4 # (m/s) velocity of tcp when lifting the object up from the surface 
 lift_dist: 0.2 # (meter) distance of gripper lifted off from the surface
-finger_scoop_stiffness: 30 # pos gain of finger for scooping
-thumb_scoop_stiffness: 60 # pos gain of thumb for scooping
+finger_scoop_stiffness: 50 # pos gain of finger for scooping
+thumb_scoop_stiffness: 80 # pos gain of thumb for scooping
 finger_grasp_stiffness: 100 # pos gain of finger for grasping
 thumb_grasp_stiffness: 100 # pos gain of thumb for grasping
 
