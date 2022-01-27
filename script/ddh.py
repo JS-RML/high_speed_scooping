@@ -182,66 +182,57 @@ class DDGripper(object):
         print('Stop logging')
 
     def display_log(self, grip_theta, save_plot = False):
-        # plot_item = {} # dict of list
-        # for i in self.logged_data[0]:
-        #     plot_item[i] = []
-        log_time = []
-        r0 = []
-        r1 = []
-        l0 = []
-        l1 = []
-        r0_cmd = []
-        r1_cmd = []
-        l0_cmd = []
-        l1_cmd = []
-        l_stiff = []
-        r_stiff = []
-        psi = []
+        plot_item = {}
+        for i in self.logged_data[0]:
+            if i == 'phi':
+                i = 'psi'
+            plot_item[i] = [] # dict of list
+        
+        # convert logged_data(list of dict) to plot_item(dict of list)
         for d in self.logged_data:
-            l0.append(d['L0'])
-            l1.append(d['L1'])
-            r0.append(d['R0'])
-            r1.append(d['R1'])
-            l0_cmd.append(d['L0_cmd'])
-            l1_cmd.append(d['L1_cmd'])
-            r0_cmd.append(d['R0_cmd'])
-            r1_cmd.append(d['R1_cmd'])
-            l_stiff.append(d['L_stiff'])
-            r_stiff.append(d['R_stiff'])
-            psi.append(d['phi'] + grip_theta) # angle of attack
-            log_time.append(d['t']-self.logged_data[0]['t']) # relative time from log starts
+            for name in d:
+                if name == 'phi':
+                    # convert phi to psi (angle of attack)
+                    plot_item['psi'].append(d[name] + grip_theta)
+                elif name == 't':
+                    # convert t to relative time
+                    plot_item[name].append(d[name]-self.logged_data[0][name])
+                else:
+                    plot_item[name].append(d[name])
+
         if self.commanded_time is not None:
             self.commanded_time = self.commanded_time - self.logged_data[0]['t']
+            plot_item['t_cmd'] = [self.commanded_time]
             print("Commanded time: {} ms".format(self.commanded_time))
         # creat subsplots
         fig1, ax1 = plt.subplots(1,2)
         fig2, ax2 = plt.subplots(1,2)
         # plot motor angle
-        ax1[0].plot(log_time, l0, label='F0', color='tab:blue')
-        ax1[0].plot(log_time, l1, label='F1', color='tab:orange')
-        ax1[0].plot(log_time, r0, label='T0', color='tab:green')
-        ax1[0].plot(log_time, r1, label='T1', color='tab:red')
-        ax1[0].plot(log_time, l0_cmd, color='tab:blue', linestyle='--')
-        ax1[0].plot(log_time, l1_cmd, color='tab:orange', linestyle='--')
-        ax1[0].plot(log_time, r0_cmd, color='tab:green', linestyle='--')
-        ax1[0].plot(log_time, r1_cmd, color='tab:red', linestyle='--')
-        if self.commanded_time is not None: ax1[0].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5', linestyle='--')
+        ax1[0].plot(plot_item['t'], plot_item['L0'], label='F0', color='tab:blue')
+        ax1[0].plot(plot_item['t'], plot_item['L1'], label='F1', color='tab:orange')
+        ax1[0].plot(plot_item['t'], plot_item['R0'], label='T0', color='tab:green')
+        ax1[0].plot(plot_item['t'], plot_item['R1'], label='T1', color='tab:red')
+        ax1[0].plot(plot_item['t'], plot_item['L0_cmd'], color='tab:blue', linestyle='--')
+        ax1[0].plot(plot_item['t'], plot_item['L1_cmd'], color='tab:orange', linestyle='--')
+        ax1[0].plot(plot_item['t'], plot_item['R0_cmd'], color='tab:green', linestyle='--')
+        ax1[0].plot(plot_item['t'], plot_item['R1_cmd'], color='tab:red', linestyle='--')
+        if self.commanded_time is not None: ax1[0].axvline(x=plot_item['t_cmd'], color='darkgray', linewidth='1.5', linestyle='--')
         ax1[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax1[0].set_title("Readings of motor angles")
         ax1[0].set_ylabel("Angle (degree)")
         ax1[0].set_xlabel("Time (ms)")
         ax1[0].grid(True)
         # plot angle of attack
-        ax1[1].plot(log_time, psi)
-        if self.commanded_time is not None: ax1[1].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5' ,linestyle='--')
+        ax1[1].plot(plot_item['t'], plot_item['psi'])
+        if self.commanded_time is not None: ax1[1].axvline(x=plot_item['t_cmd'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax1[1].set_title("Readings of psi (angle of attack)")
         ax1[1].set_ylabel("Angle (degree)")
         ax1[1].set_xlabel("Time (ms)")
         ax1[1].grid(True)
         # plot stiffness
-        ax2[0].plot(log_time, l_stiff, label='F_Kp')
-        ax2[0].plot(log_time, r_stiff, label='T_Kp')
-        if self.commanded_time is not None: ax2[0].axvline(x=self.commanded_time, color='darkgray', linewidth='1.5' ,linestyle='--')
+        ax2[0].plot(plot_item['t'], plot_item['L_stiff'], label='F_Kp')
+        ax2[0].plot(plot_item['t'], plot_item['R_stiff'], label='T_Kp')
+        if self.commanded_time is not None: ax2[0].axvline(x=plot_item['t_cmd'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax2[0].legend(loc='lower right').get_frame().set_linewidth(1.0)
         ax2[0].set_title("Stiffness of fingers (proportional gain of position controller)")
         ax2[0].set_ylabel("Gain ((turn/s) / turn)")
@@ -260,7 +251,7 @@ class DDGripper(object):
             fig2.savefig(save_dir + '/gain.png', bbox_inches=fig2sub1.expanded(1.23, 1.23))
             # save logged data
             with open(save_dir + '/data.json', mode='w') as f:
-                json.dump(self.logged_data, f)
+                json.dump(plot_item, f)
         plt.show()
         self.commanded_time = None
 
