@@ -108,12 +108,16 @@ The dotted lines depict the commanded reference trajectory of motor joint angles
 <p align = "center">
 <img src="media/plot_light/joint.png#gh-light-mode-only" width="600"> 
 <img src="media/plot_light/gain.png#gh-light-mode-only" width="600"> 
+<img src="media/plot_light/height.png#gh-light-mode-only" width="600"> 
+<img src="media/plot_light/spd.png#gh-light-mode-only" width="600"> 
 <img src="media/plot_light/psi.png#gh-light-mode-only" width="600"> 
 </p>
 <!-- for dark theme -->
 <p align = "center">
 <img src="media/plot_dark/joint.png#gh-dark-mode-only" width="600"> 
 <img src="media/plot_dark/gain.png#gh-dark-mode-only" width="600"> 
+<img src="media/plot_dark/height.png#gh-dark-mode-only" width="600"> 
+<img src="media/plot_dark/spd.png#gh-dark-mode-only" width="600"> 
 <img src="media/plot_dark/psi.png#gh-dark-mode-only" width="600"> 
 </p>
 
