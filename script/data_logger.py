@@ -44,7 +44,7 @@ class DataLogger:
                 'L1_cmd': self.ddh.cmd_pos_l1,
                 'R0_cmd': self.ddh.cmd_pos_r0,
                 'R1_cmd': self.ddh.cmd_pos_r1,
-                # 'psi': self.ddh.right_phi + self.scoop.theta, # cause delay in log
+                'UR_Z_SPD': self.ur.get_tcp_speed(wait=False)[2],
             }
             self.logged_data1.append(data)
             if self.scoop.collided:
@@ -56,8 +56,7 @@ class DataLogger:
             time.sleep(1.0/self.log_rate2)
             data = {
                 't2': round(time.time() * 1000),
-                'UR_Z': self.ur.getl(wait=True,_log=False)[2],
-                'UR_Z_SPD': self.ur.get_tcp_speed(wait=False)[2]
+                'UR_Z': self.ur.getl(wait=True,_log=False)[2]
             }
             self.logged_data2.append(data)
 
@@ -184,8 +183,46 @@ class DataLogger:
         ax3[0].set_ylabel("Height (m)")
         ax3[0].set_xlabel("Time (ms)")
 
-        # plot ur z spd
-        ax3[1].plot(plot_item['t2'], plot_item['UR_Z_SPD'])
+        # compute commanded spd
+        cmd_spd = [0]
+        cmd_t = [0]
+        cmd_spd.append(0)
+        t_wp = 200 # delay 
+        cmd_t.append(t_wp)
+        # reached const approaching spd
+        cmd_spd.append(-self.scoop.smack_vel)
+        t_wp = t_wp + round(self.scoop.smack_vel/self.scoop.smack_acc)*1000
+        cmd_t.append(t_wp)
+        # reached collision
+        cmd_spd.append(-self.scoop.smack_vel)
+        t_wp = plot_item['t_col'][0]
+        cmd_t.append(t_wp)
+        # reached const lifting spd
+        acc_slow = (self.scoop.smack_vel**2) / (2*self.scoop.slow_dist)
+        t_liftAcc = self.scoop.lift_vel / acc_slow
+        s_liftAcc = 0.5 * acc_slow * t_liftAcc**2
+        t_liftConstSpd = (self.scoop.lift_dist-s_liftAcc) / self.scoop.lift_vel
+        cmd_spd.append(self.scoop.lift_vel)
+        t_wp = t_wp + round(t_liftAcc*1000)
+        cmd_t.append(t_wp)
+        cmd_spd.append(self.scoop.lift_vel)
+        t_wp = t_wp + round(t_liftConstSpd*1000)
+        cmd_t.append(t_wp)
+        # stop to zero spd
+        cmd_spd.append(0)
+        t_stop = self.scoop.lift_vel / self.scoop.stop_acc
+        t_wp = t_wp + round(t_stop*1000)
+        cmd_t.append(t_wp)
+        # end point
+        cmd_spd.append(0)
+        cmd_t.append(plot_item['t'][-1])
+        # save data in dict
+        plot_item['cmd_spd'] = cmd_spd
+        plot_item['cmd_t'] = cmd_t
+
+        # plot actual ur z spd
+        ax3[1].plot(plot_item['cmd_t'],plot_item['cmd_spd'], linestyle='--', color='tab:red')
+        ax3[1].plot(plot_item['t'], plot_item['UR_Z_SPD'], color='tab:red')
         if self.collision_time is not None: ax3[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax3[1].set_title("Speed of arm")
         ax3[1].set_ylabel("Speed (m/s)")
