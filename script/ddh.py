@@ -10,10 +10,6 @@ from numpy import deg2rad, rad2deg
 import odrive
 from odrive.enums import *
 import yaml
-import threading
-import matplotlib.pyplot as plt
-import os
-import json
 
 def arm(axis):
     axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH
@@ -119,14 +115,6 @@ class DDGripper(object):
         # self.pub_gripper_state = rospy.Publisher('/ddh/state', GripperState, queue_size=10)
         # self.timer = rospy.Timer(rospy.Duration(0.02), self.refresh)
 
-        #thread for logging
-        self.keep_logging = False
-        self.log_rate = 100
-        self.logged_data = []
-        self.logging_thread = None
-        # commanded time
-        self.commanded = False
-        self.commanded_time = None
         # commanded link angle
         self.cmd_pos_l0 = None
         self.cmd_pos_l1 = None
@@ -135,126 +123,6 @@ class DDGripper(object):
         # commanded stiffness
         self.cmd_stiff_l = None
         self.cmd_stiff_r = None
-
-    def logging_job(self):
-        while self.keep_logging:
-            time.sleep(1.0/self.log_rate)
-            data = {
-                'L0': self.link_pos_l0,
-                'L1': self.link_pos_l1,
-                'R0': self.link_pos_r0,
-                'R1': self.link_pos_r1,
-                'L0_cmd': self.cmd_pos_l0,
-                'L1_cmd': self.cmd_pos_l1,
-                'R0_cmd': self.cmd_pos_r0,
-                'R1_cmd': self.cmd_pos_r1,
-                'L_stiff': self.cmd_stiff_l,
-                'R_stiff': self.cmd_stiff_r,
-                'phi': self.right_phi,
-                't': round(time.time() * 1000)
-            }
-            self.logged_data.append(data)
-            if self.commanded:
-                self.commanded_time = data['t']
-                self.commanded = False
-
-    @property
-    def logged(self):
-        return self.logging_thread is not None
-
-    @logged.setter
-    def logged(self, log):
-        if log and not self.logged:
-            self.log_start()
-        if not log and self.logged:
-            self.log_stop()
-    
-    def log_start(self):
-        self.logged_data.clear()
-        self.keep_logging = True
-        self.logging_thread = threading.Thread(target=self.logging_job)
-        self.logging_thread.start()
-        print('Start logging')
-
-    def log_stop(self):
-        self.keep_logging = False
-        self.logging_thread.join()
-        self.logging_thread = None
-        print('Stop logging')
-
-    def display_log(self, grip_theta, save_plot = False):
-        plot_item = {}
-        for i in self.logged_data[0]:
-            if i == 'phi':
-                i = 'psi'
-            plot_item[i] = [] # dict of list
-        
-        # convert logged_data(list of dict) to plot_item(dict of list)
-        for d in self.logged_data:
-            for name in d:
-                if name == 'phi':
-                    # convert phi to psi (angle of attack)
-                    plot_item['psi'].append(d[name] + grip_theta)
-                elif name == 't':
-                    # convert t to relative time
-                    plot_item[name].append(d[name]-self.logged_data[0][name])
-                else:
-                    plot_item[name].append(d[name])
-
-        if self.commanded_time is not None:
-            self.commanded_time = self.commanded_time - self.logged_data[0]['t']
-            plot_item['t_cmd'] = [self.commanded_time]
-            print("Commanded time: {} ms".format(self.commanded_time))
-        # creat subsplots
-        fig1, ax1 = plt.subplots(1,2)
-        fig2, ax2 = plt.subplots(1,2)
-        # plot motor angle
-        ax1[0].plot(plot_item['t'], plot_item['L0'], label='F0', color='tab:blue')
-        ax1[0].plot(plot_item['t'], plot_item['L1'], label='F1', color='tab:orange')
-        ax1[0].plot(plot_item['t'], plot_item['R0'], label='T0', color='tab:green')
-        ax1[0].plot(plot_item['t'], plot_item['R1'], label='T1', color='tab:red')
-        ax1[0].plot(plot_item['t'], plot_item['L0_cmd'], color='tab:blue', linestyle='--')
-        ax1[0].plot(plot_item['t'], plot_item['L1_cmd'], color='tab:orange', linestyle='--')
-        ax1[0].plot(plot_item['t'], plot_item['R0_cmd'], color='tab:green', linestyle='--')
-        ax1[0].plot(plot_item['t'], plot_item['R1_cmd'], color='tab:red', linestyle='--')
-        if self.commanded_time is not None: ax1[0].axvline(x=plot_item['t_cmd'], color='darkgray', linewidth='1.5', linestyle='--')
-        ax1[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
-        ax1[0].set_title("Readings of motor angles")
-        ax1[0].set_ylabel("Angle (degree)")
-        ax1[0].set_xlabel("Time (ms)")
-        ax1[0].grid(True)
-        # plot angle of attack
-        ax1[1].plot(plot_item['t'], plot_item['psi'])
-        if self.commanded_time is not None: ax1[1].axvline(x=plot_item['t_cmd'], color='darkgray', linewidth='1.5' ,linestyle='--')
-        ax1[1].set_title("Readings of psi (angle of attack)")
-        ax1[1].set_ylabel("Angle (degree)")
-        ax1[1].set_xlabel("Time (ms)")
-        ax1[1].grid(True)
-        # plot stiffness
-        ax2[0].plot(plot_item['t'], plot_item['L_stiff'], label='F_Kp')
-        ax2[0].plot(plot_item['t'], plot_item['R_stiff'], label='T_Kp')
-        if self.commanded_time is not None: ax2[0].axvline(x=plot_item['t_cmd'], color='darkgray', linewidth='1.5' ,linestyle='--')
-        ax2[0].legend(loc='lower right').get_frame().set_linewidth(1.0)
-        ax2[0].set_title("Stiffness of fingers (proportional gain of position controller)")
-        ax2[0].set_ylabel("Gain ((turn/s) / turn)")
-        ax2[0].set_xlabel("Time (ms)")
-        ax2[0].grid(True)
-        if save_plot: 
-            currentTime = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
-            save_dir = 'plots/' + str(currentTime)
-            os.makedirs(save_dir)
-            # save two subplots as two figs
-            fig1sub1 = ax1[0].get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
-            fig1sub2 = ax1[1].get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
-            fig1.savefig(save_dir + '/joint.png', bbox_inches=fig1sub1.expanded(1.23, 1.23))
-            fig1.savefig(save_dir + '/psi.png', bbox_inches=fig1sub2.expanded(1.23, 1.23))
-            fig2sub1 = ax2[0].get_window_extent().transformed(fig2.dpi_scale_trans.inverted())
-            fig2.savefig(save_dir + '/gain.png', bbox_inches=fig2sub1.expanded(1.23, 1.23))
-            # save logged data
-            with open(save_dir + '/data.json', mode='w') as f:
-                json.dump(plot_item, f)
-        plt.show()
-        self.commanded_time = None
 
     def arm(self, pos_gain = 250, vel_gain = 1, BW = 500, finger = 'LR'):
         set_axis = []
@@ -578,7 +446,6 @@ class DDGripper(object):
     def set_left_tip(self, pos):
         print("Setting left tip:", pos)
         try:
-            self.commanded = True
             cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'L')
         except:
             print('Target position out of finger workspace!')
@@ -588,7 +455,6 @@ class DDGripper(object):
     def set_right_tip(self, pos):
         print("Setting right tip:", pos)
         try:
-            self.commanded = True
             cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'R')
         except:
             print('Target position out of finger workspace!')
