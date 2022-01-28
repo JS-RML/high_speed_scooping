@@ -4,6 +4,8 @@ import time
 import json
 import threading
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
+import numpy as np
 
 
 
@@ -15,15 +17,21 @@ class DataLogger:
         self.scoop = scooping_primitives
 
         self.keep_logging = False
-        self.log_rate = 100
-        self.logging_thread = None
+        self.log_rate1 = 300
+        self.log_rate2 = 100
+        self.log_rate3 = 200
+        self.logging_thread1 = None
+        self.logging_thread2 = None
+        self.logging_thread3 = None
 
-        self.logged_data = []
+        self.logged_data1 = []
+        self.logged_data2 = []
+        self.logged_data3 = []
         self.collision_time = None
 
-    def logging_job(self):
+    def logging_job1(self):
         while self.keep_logging:
-            time.sleep(1.0/self.log_rate)
+            time.sleep(1.0/self.log_rate1)
             data = {
                 't': round(time.time() * 1000),
                 'L_stiff': self.ddh.cmd_stiff_l,
@@ -36,18 +44,35 @@ class DataLogger:
                 'L1_cmd': self.ddh.cmd_pos_l1,
                 'R0_cmd': self.ddh.cmd_pos_r0,
                 'R1_cmd': self.ddh.cmd_pos_r1,
-                'psi': self.ddh.right_phi + self.scoop.theta, # cause delay in log
-                'UR_Z': self.ur.getl(_log=False)[2],
-                'UR_Z_SPD': self.ur.get_tcp_speed(wait=False)[2]
+                # 'psi': self.ddh.right_phi + self.scoop.theta, # cause delay in log
             }
-            self.logged_data.append(data)
+            self.logged_data1.append(data)
             if self.scoop.collided:
                 self.collision_time = data['t']
                 self.scoop.collided = False
+        
+    def logging_job2(self):
+        while self.keep_logging:
+            time.sleep(1.0/self.log_rate2)
+            data = {
+                't2': round(time.time() * 1000),
+                'UR_Z': self.ur.getl(wait=True,_log=False)[2],
+                'UR_Z_SPD': self.ur.get_tcp_speed(wait=False)[2]
+            }
+            self.logged_data2.append(data)
+
+    def logging_job3(self):
+        while self.keep_logging:
+            time.sleep(1.0/self.log_rate3)
+            data = {
+                't3': round(time.time() * 1000),
+                'psi': self.ddh.right_phi + self.scoop.theta
+            }
+            self.logged_data3.append(data)
 
     @property
     def logged(self):
-        return self.logging_thread is not None
+        return self.logging_thread1 is not None
 
     @logged.setter
     def logged(self, log):
@@ -57,29 +82,55 @@ class DataLogger:
             self.log_stop()
     
     def log_start(self):
-        self.logged_data.clear()
+        self.logged_data1.clear()
+        self.logged_data2.clear()
+        self.logged_data3.clear()
         self.keep_logging = True
-        self.logging_thread = threading.Thread(target=self.logging_job)
-        self.logging_thread.start()
+        self.logging_thread1 = threading.Thread(target=self.logging_job1)
+        self.logging_thread1.start()
+        self.logging_thread2 = threading.Thread(target=self.logging_job2)
+        self.logging_thread2.start()
+        self.logging_thread3 = threading.Thread(target=self.logging_job3)
+        self.logging_thread3.start()
         print('Start logging')
 
     def log_stop(self):
         self.keep_logging = False
-        self.logging_thread.join()
-        self.logging_thread = None
+        self.logging_thread1.join()
+        self.logging_thread1 = None
+        self.logging_thread2.join()
+        self.logging_thread2 = None
+        self.logging_thread3.join()
+        self.logging_thread3 = None
         print('Stop logging')
 
     def plot_data(self, save_plot = False):
         plot_item = {}
-        for i in self.logged_data[0]:
+        for i in self.logged_data1[0]:
             plot_item[i] = []
+        for j in self.logged_data2[0]:
+            plot_item[j] = []
+        for k in self.logged_data3[0]:
+            plot_item[k] = []
+
         # convert logged_data(list of dict) to plot_item(dict of list)
-        for d in self.logged_data:
+        for d in self.logged_data1:
             for name in d:
-                if name == 't': plot_item[name].append(d[name]-self.logged_data[0][name])
+                if name == 't': plot_item[name].append(d[name]-self.logged_data1[0][name])
                 else: plot_item[name].append(d[name])
+
+        for d in self.logged_data2:
+            for name in d:
+                if name == 't2': plot_item[name].append(d[name]-self.logged_data2[0][name])
+                else: plot_item[name].append(d[name])
+
+        for d in self.logged_data3:
+            for name in d:
+                if name == 't3': plot_item[name].append(d[name]-self.logged_data3[0][name])
+                else: plot_item[name].append(d[name])
+
         if self.collision_time is not None:
-            self.collision_time = self.collision_time - self.logged_data[0]['t']
+            self.collision_time = self.collision_time - self.logged_data1[0]['t']
             plot_item['t_col'] = [self.collision_time]
             print("Collision time: {} ms".format(self.collision_time))
         
@@ -105,7 +156,7 @@ class DataLogger:
         ax1[0].grid(True)
 
         # plot angle of attack
-        ax1[1].plot(plot_item['t'], plot_item['psi'])
+        ax1[1].plot(plot_item['t3'], plot_item['psi'])
         if self.collision_time is not None: ax1[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax1[1].set_title("Readings of psi (angle of attack)")
         ax1[1].set_ylabel("Angle (degree)")
@@ -122,15 +173,19 @@ class DataLogger:
         ax2[0].set_xlabel("Time (ms)")
         ax2[0].grid(True)
 
-        # # plot ur z
-        ax3[0].plot(plot_item['t'], plot_item['UR_Z'])
+        # plot ur z
+        ur_z_interp = interp1d(plot_item['t2'],plot_item['UR_Z'],kind="cubic")
+        t_sample = np.linspace(plot_item['t2'][0],plot_item['t2'][-1],100)
+        ur_z_new = ur_z_interp(t_sample)
+        ax3[0].plot(t_sample, ur_z_new)
+        # ax3[0].plot(plot_item['t2'], plot_item['UR_Z'])
         if self.collision_time is not None: ax3[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax3[0].set_title("Height of arm")
         ax3[0].set_ylabel("Height (m)")
         ax3[0].set_xlabel("Time (ms)")
 
-        # # plot ur z spd
-        ax3[1].plot(plot_item['t'], plot_item['UR_Z_SPD'])
+        # plot ur z spd
+        ax3[1].plot(plot_item['t2'], plot_item['UR_Z_SPD'])
         if self.collision_time is not None: ax3[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax3[1].set_title("Speed of arm")
         ax3[1].set_ylabel("Speed (m/s)")
