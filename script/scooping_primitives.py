@@ -22,7 +22,7 @@ class HighSpeedScooping:
 
         self.is_init = False
         self.collided = False
-        
+
         self.obj_l = config['object_length']
         self.obj_t = config['object_thickness']
         # parameters for pre-scooping
@@ -46,6 +46,7 @@ class HighSpeedScooping:
         self.slow_dist = config['slow_dist']
         self.lift_vel = config['lift_vel']
         self.lift_dist = config['lift_dist']
+        self.stop_acc = config['stop_acc']
         self.fg_scp_stiff = config['finger_scoop_stiffness']
         self.tb_scp_stiff = config['thumb_scoop_stiffness']
         self.fg_gsp_stiff = config['finger_grasp_stiffness']
@@ -159,7 +160,7 @@ class HighSpeedScooping:
                     # sleep until reached to lifted distance
                     time.sleep(t_liftAcc + t_liftConstSpd)
                     # terminate robot motion
-                    self.ur.stopl(5)
+                    self.ur.stopl(self.stop_acc)
                     break
             time.sleep(1)
             pos_end = self.ur.getl()[2]
