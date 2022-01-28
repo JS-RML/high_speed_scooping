@@ -187,7 +187,7 @@ class DataLogger:
         cmd_spd = [0]
         cmd_t = [0]
         cmd_spd.append(0)
-        t_wp = 200 # delay 
+        t_wp = 130 # hardcode delay 
         cmd_t.append(t_wp)
         # reached const approaching spd
         cmd_spd.append(-self.scoop.smack_vel)
