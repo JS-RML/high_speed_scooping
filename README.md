@@ -82,6 +82,7 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
     - ***slow_dist***: distance of gripper slowing down after collision (<img src="https://render.githubusercontent.com/render/math?math=m">)
     - ***lift_vel***: velocity of tcp when lifting the object up from the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***lift_dist***: distance of gripper lifted off from the surface (<img src="https://render.githubusercontent.com/render/math?math=m">)
+    - ***stop_acc***: deceleration of stopping the robot's motion (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
     - ***finger_scoop_stiffness***: position gain of finger after collision
     - ***thumb_scoop_stiffness***: position gain of thumb after collision
 
