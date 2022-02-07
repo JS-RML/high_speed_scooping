@@ -17,23 +17,16 @@ class DataLogger:
         self.scoop = scooping_primitives
 
         self.keep_logging = False
-        self.log_rate1 = 300
-        self.log_rate2 = 100
-        self.log_rate3 = 200
-        self.logging_thread1 = None
-        self.logging_thread2 = None
-        self.logging_thread3 = None
-
-        self.logged_data1 = []
-        self.logged_data2 = []
-        self.logged_data3 = []
+        self.log_rates = [300, 100, 200] # no. of element determines no. of threads
+        self.logging_threads = [None for i in self.log_rates]
+        self.logged_data_sets = [[] for i in self.log_rates]
         self.collision_time = None
 
     def logging_job1(self):
         while self.keep_logging:
-            time.sleep(1.0/self.log_rate1)
+            time.sleep(1.0/self.log_rates[0])
             data = {
-                't': round(time.time() * 1000),
+                't1': round(time.time() * 1000),
                 'L_stiff': self.ddh.cmd_stiff_l,
                 'R_stiff': self.ddh.cmd_stiff_r,
                 'L0': self.ddh.link_pos_l0,
@@ -46,32 +39,32 @@ class DataLogger:
                 'R1_cmd': self.ddh.cmd_pos_r1,
                 'UR_Z_SPD': self.ur.get_tcp_speed(wait=False)[2],
             }
-            self.logged_data1.append(data)
+            self.logged_data_sets[0].append(data)
             if self.scoop.collided:
-                self.collision_time = data['t']
+                self.collision_time = data['t1']
                 self.scoop.collided = False
         
     def logging_job2(self):
         while self.keep_logging:
-            time.sleep(1.0/self.log_rate2)
+            time.sleep(1.0/self.log_rates[1])
             data = {
                 't2': round(time.time() * 1000),
                 'UR_Z': self.ur.getl(wait=True,_log=False)[2]
             }
-            self.logged_data2.append(data)
+            self.logged_data_sets[1].append(data)
 
     def logging_job3(self):
         while self.keep_logging:
-            time.sleep(1.0/self.log_rate3)
+            time.sleep(1.0/self.log_rates[2])
             data = {
                 't3': round(time.time() * 1000),
                 'psi': self.ddh.right_phi + self.scoop.theta
             }
-            self.logged_data3.append(data)
+            self.logged_data_sets[2].append(data)
 
     @property
     def logged(self):
-        return self.logging_thread1 is not None
+        return all(x is not None for x in self.logging_threads)
 
     @logged.setter
     def logged(self, log):
@@ -81,55 +74,38 @@ class DataLogger:
             self.log_stop()
     
     def log_start(self):
-        self.logged_data1.clear()
-        self.logged_data2.clear()
-        self.logged_data3.clear()
+        for s in self.logged_data_sets:
+            s.clear()
         self.keep_logging = True
-        self.logging_thread1 = threading.Thread(target=self.logging_job1)
-        self.logging_thread1.start()
-        self.logging_thread2 = threading.Thread(target=self.logging_job2)
-        self.logging_thread2.start()
-        self.logging_thread3 = threading.Thread(target=self.logging_job3)
-        self.logging_thread3.start()
+        jobs = [self.logging_job1, self.logging_job2, self.logging_job3]
+        for idx in range(len(self.log_rates)):
+            self.logging_threads[idx] = threading.Thread(target=jobs[idx])
+            self.logging_threads[idx].start()
         print('Start logging')
 
     def log_stop(self):
         self.keep_logging = False
-        self.logging_thread1.join()
-        self.logging_thread1 = None
-        self.logging_thread2.join()
-        self.logging_thread2 = None
-        self.logging_thread3.join()
-        self.logging_thread3 = None
+        for t in self.logging_threads:
+            t.join()
+        self.logging_threads = [None for i in self.log_rates]
         print('Stop logging')
 
     def plot_data(self, save_plot = False):
         plot_item = {}
-        for i in self.logged_data1[0]:
-            plot_item[i] = []
-        for j in self.logged_data2[0]:
-            plot_item[j] = []
-        for k in self.logged_data3[0]:
-            plot_item[k] = []
+        for s in self.logged_data_sets:
+            for name in s[0]:
+                plot_item[name] = [] # create empty list for each item
 
-        # convert logged_data(list of dict) to plot_item(dict of list)
-        for d in self.logged_data1:
-            for name in d:
-                if name == 't': plot_item[name].append(d[name]-self.logged_data1[0][name])
-                else: plot_item[name].append(d[name])
-
-        for d in self.logged_data2:
-            for name in d:
-                if name == 't2': plot_item[name].append(d[name]-self.logged_data2[0][name])
-                else: plot_item[name].append(d[name])
-
-        for d in self.logged_data3:
-            for name in d:
-                if name == 't3': plot_item[name].append(d[name]-self.logged_data3[0][name])
-                else: plot_item[name].append(d[name])
-
+        # convert logged_data_set(list of dict) to plot_item(dict of list)
+        for s in self.logged_data_sets:
+            for data in s:
+                for name in data:
+                    if name == 't1' or name == 't2' or name == 't3': 
+                        plot_item[name].append(data[name]-s[0][name]) # relative time from start logging
+                    else: plot_item[name].append(data[name])
+        
         if self.collision_time is not None:
-            self.collision_time = self.collision_time - self.logged_data1[0]['t']
+            self.collision_time = self.collision_time - self.logged_data_sets[0][0]['t1'] #self.logged_data1[0]['t1']
             plot_item['t_col'] = [self.collision_time]
             print("Collision time: {} ms".format(self.collision_time))
         
@@ -137,21 +113,27 @@ class DataLogger:
         fig1, ax1 = plt.subplots(1,2)
         fig2, ax2 = plt.subplots(1,2)
         fig3, ax3 = plt.subplots(1,2)
+        # x axis margin
+        max_t = max([plot_item['t1'][-1], plot_item['t2'][-1], plot_item['t3'][-1]])
+        x_boundary = 0.05
+        x_min = max_t * -x_boundary
+        x_max = max_t * (1 + x_boundary)
 
         # plot motor angle
-        ax1[0].plot(plot_item['t'], plot_item['L0'], label='F0', color='tab:blue')
-        ax1[0].plot(plot_item['t'], plot_item['L1'], label='F1', color='tab:orange')
-        ax1[0].plot(plot_item['t'], plot_item['R0'], label='T0', color='tab:green')
-        ax1[0].plot(plot_item['t'], plot_item['R1'], label='T1', color='tab:red')
-        ax1[0].plot(plot_item['t'], plot_item['L0_cmd'], color='tab:blue', linestyle='--')
-        ax1[0].plot(plot_item['t'], plot_item['L1_cmd'], color='tab:orange', linestyle='--')
-        ax1[0].plot(plot_item['t'], plot_item['R0_cmd'], color='tab:green', linestyle='--')
-        ax1[0].plot(plot_item['t'], plot_item['R1_cmd'], color='tab:red', linestyle='--')
+        ax1[0].plot(plot_item['t1'], plot_item['L0'], label='F0', color='tab:blue')
+        ax1[0].plot(plot_item['t1'], plot_item['L1'], label='F1', color='tab:orange')
+        ax1[0].plot(plot_item['t1'], plot_item['R0'], label='T0', color='tab:green')
+        ax1[0].plot(plot_item['t1'], plot_item['R1'], label='T1', color='tab:red')
+        ax1[0].plot(plot_item['t1'], plot_item['L0_cmd'], color='tab:blue', linestyle='--')
+        ax1[0].plot(plot_item['t1'], plot_item['L1_cmd'], color='tab:orange', linestyle='--')
+        ax1[0].plot(plot_item['t1'], plot_item['R0_cmd'], color='tab:green', linestyle='--')
+        ax1[0].plot(plot_item['t1'], plot_item['R1_cmd'], color='tab:red', linestyle='--')
         if self.collision_time is not None: ax1[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5', linestyle='--')
         ax1[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax1[0].set_title("Readings of motor angles")
         ax1[0].set_ylabel("Angle (degree)")
         ax1[0].set_xlabel("Time (ms)")
+        ax1[0].set_xlim((x_min,x_max))
         ax1[0].grid(True)
 
         # plot angle of attack
@@ -160,16 +142,18 @@ class DataLogger:
         ax1[1].set_title("Readings of psi (angle of attack)")
         ax1[1].set_ylabel("Angle (degree)")
         ax1[1].set_xlabel("Time (ms)")
+        ax1[1].set_xlim((x_min,x_max))
         ax1[1].grid(True)
 
         # plot stiffness
-        ax2[0].plot(plot_item['t'], plot_item['L_stiff'], label='F_Kp')
-        ax2[0].plot(plot_item['t'], plot_item['R_stiff'], label='T_Kp')
+        ax2[0].plot(plot_item['t1'], plot_item['L_stiff'], label='F_Kp')
+        ax2[0].plot(plot_item['t1'], plot_item['R_stiff'], label='T_Kp')
         if self.collision_time is not None: ax2[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax2[0].legend(loc='lower right').get_frame().set_linewidth(1.0)
         ax2[0].set_title("Stiffness of fingers (proportional gain of position controller)")
         ax2[0].set_ylabel("Gain ((turn/s) / turn)")
         ax2[0].set_xlabel("Time (ms)")
+        ax2[0].set_xlim((x_min,x_max))
         ax2[0].grid(True)
 
         # plot ur z
@@ -182,6 +166,8 @@ class DataLogger:
         ax3[0].set_title("Height of arm")
         ax3[0].set_ylabel("Height (m)")
         ax3[0].set_xlabel("Time (ms)")
+        ax3[0].set_xlim((x_min,x_max))
+        ax3[0].grid(True)
 
         # compute commanded spd
         cmd_spd = [0]
@@ -215,18 +201,20 @@ class DataLogger:
         cmd_t.append(t_wp)
         # end point
         cmd_spd.append(0)
-        cmd_t.append(plot_item['t'][-1])
+        cmd_t.append(plot_item['t1'][-1])
         # save data in dict
         plot_item['cmd_spd'] = cmd_spd
         plot_item['cmd_t'] = cmd_t
 
         # plot actual ur z spd
         ax3[1].plot(plot_item['cmd_t'],plot_item['cmd_spd'], linestyle='--', color='tab:red')
-        ax3[1].plot(plot_item['t'], plot_item['UR_Z_SPD'], color='tab:red')
+        ax3[1].plot(plot_item['t1'], plot_item['UR_Z_SPD'], color='tab:red')
         if self.collision_time is not None: ax3[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax3[1].set_title("Speed of arm")
         ax3[1].set_ylabel("Speed (m/s)")
         ax3[1].set_xlabel("Time (ms)")
+        ax3[1].set_xlim((x_min,x_max))
+        ax3[1].grid(True)
 
         if save_plot: 
             currentTime = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
