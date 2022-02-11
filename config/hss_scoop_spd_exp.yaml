@@ -1,6 +1,6 @@
 # object's geometry
-object_length: 33 # mm plastic card: 54mm, acrylic obj: 33mm
-object_thickness: 0.75 # mm
+object_length: 33 # mm
+object_thickness: 4 # mm
 
 # prescooping parameters
 gripper_tilt: 70 # (degree) angle of the gripper
