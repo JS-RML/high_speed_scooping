@@ -13,7 +13,7 @@ finger_prescoop_stiffness: 30 # pos gain of finger before scoop
 thumb_prescoop_stiffness: 60 # pos gain of thumb before scoop
 init_vel: 0.05 # (m/s) velocity of tcp when initializing gripper pose
 init_acc: 0.05 # (m/s^2) acceleration...
-digits_speed: 20 # speed of the fingers (bandwidth of input position filter) 
+digits_speed: 100 # speed of the fingers (bandwidth of input position filter) 
 
 # smack and scoop parameters
 smack_vel: 0.45 # (m/s) velocity of tcp when approaching to the surface

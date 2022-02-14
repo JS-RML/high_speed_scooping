@@ -138,6 +138,7 @@ class HighSpeedScooping:
                     pos_collide = self.ur.getl()[2]
                     print ("Collision detected!")
                     # close fingers with different stiffness
+                    # self.ddh.arm(pos_gain=self.fg_scp_stiff, BW=self.digits_spd, finger='L') #for fragile
                     self.ddh.set_stiffness(self.fg_scp_stiff, 'L')
                     self.ddh.set_stiffness(self.tb_scp_stiff, 'R')
                     self.ddh.set_left_tip((155, 45)) #157, 41 #TODO: add to config

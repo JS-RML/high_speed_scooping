@@ -9,7 +9,7 @@ contact_distance: 150 # (mm) dist from gripper frame to surface when fingers are
 finger_prescoop_position: 0.9 # dimensionless F position on the object from the scooping edge
 thumb_prescoop_position: 0.2 # dimensionless prescoop position away from the scooping edge
 gripper_center: 1.5 # gripper center line position on the object from the scooping edge
-finger_prescoop_stiffness: 150 # pos gain of finger before scoop
+finger_prescoop_stiffness: 50 # pos gain of finger before scoop
 thumb_prescoop_stiffness: 50 # pos gain of thumb before scoop
 init_vel: 0.05 # (m/s) velocity of tcp when initializing gripper pose
 init_acc: 0.05 # (m/s^2) acceleration...
@@ -22,7 +22,7 @@ slow_dist: 0.03 # (meter) distance of gripper slowing down after collision
 lift_vel: 0.25 # (m/s) velocity of tcp when lifting the object up from the surface 
 lift_dist: 0.2 # (meter) distance of gripper lifted off from the surface
 stop_acc: 5 # (m/s^2) deceleration of stopping the robot's motion
-finger_scoop_stiffness: 150 # pos gain of finger for scooping
+finger_scoop_stiffness: 50 # pos gain of finger for scooping
 thumb_scoop_stiffness: 50 # pos gain of thumb for scooping
 finger_grasp_stiffness: 120 # pos gain of finger for grasping
 thumb_grasp_stiffness: 120 # pos gain of thumb for grasping
