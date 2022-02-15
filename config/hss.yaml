@@ -26,6 +26,7 @@ finger_scoop_stiffness: 50 # pos gain of finger for scooping
 thumb_scoop_stiffness: 80 # pos gain of thumb for scooping
 finger_grasp_stiffness: 150 # pos gain of finger for grasping
 thumb_grasp_stiffness: 150 # pos gain of thumb for grasping
+digit_grasp_position: [155, 45] # digit position of grasping the object in motor frame
 
 # frame transformation parameters
 T_tool_gripper: # homogeneous transformation matrix of Gripper frame relative to tool frame
