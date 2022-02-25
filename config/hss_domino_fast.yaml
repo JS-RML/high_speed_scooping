@@ -1,5 +1,5 @@
 # object's geometry
-object_length: 43 # mm domino/oreo:43 x 7
+object_length: 43 # mm
 object_thickness: 3 # mm
 
 # prescooping parameters
