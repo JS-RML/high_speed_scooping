@@ -9,7 +9,7 @@ contact_distance: 150 # (mm) dist from gripper frame to surface when fingers are
 finger_prescoop_position: 0.8 # dimensionless F position on the object from the scooping edge
 thumb_prescoop_position: 0.05 # dimensionless prescoop position away from the scooping edge
 gripper_center: 1.1 # gripper center line position on the object from the scooping edge
-finger_prescoop_stiffness: 0 # pos gain of finger before scoop
+finger_prescoop_stiffness: 5 # pos gain of finger before scoop
 thumb_prescoop_stiffness: 10 # pos gain of thumb before scoop
 init_vel: 0.05 # (m/s) velocity of tcp when initializing gripper pose
 init_acc: 0.05 # (m/s^2) acceleration...
