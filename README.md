@@ -76,7 +76,8 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
     - ***thumb_stiffness***: position gain of thumb before scoop
     - ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
-- **Smack and Scoop Parameters**
+    - ***digits_speed***: # speed of the digits (bandwidth of input position filter) 
+- **Scooping Parameters**
     - ***smack_vel***: velocity of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***smack_acc***: acceleration of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
     - ***slow_dist***: distance of gripper slowing down after collision (<img src="https://render.githubusercontent.com/render/math?math=m">)
@@ -85,7 +86,7 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
     - ***stop_acc***: deceleration of stopping the robot's motion (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
     - ***finger_scoop_stiffness***: position gain of finger after collision
     - ***thumb_scoop_stiffness***: position gain of thumb after collision
-
+    - ***digit_grasp_position***: position of fingertips in the motor frame for grasping the object
 ## 4. Timeline of High-Speed Scooping
 <p align = "center">
 <img src="media/hss_process.jpg" width="800"> 
