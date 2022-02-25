@@ -15,7 +15,7 @@ init_vel: 0.05 # (m/s) velocity of tcp when initializing gripper pose
 init_acc: 0.05 # (m/s^2) acceleration...
 digits_speed: 100 # speed of the fingers (bandwidth of input position filter) 
 
-# smack and scoop parameters
+# scooping parameters
 smack_vel: 0.47 # (m/s) velocity of tcp when approaching to the surface
 smack_acc: 0.47 # (m/s^2) acceleration...
 slow_dist: 0.02 # (meter) distance of gripper slowing down after collision
