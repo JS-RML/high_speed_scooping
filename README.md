@@ -52,7 +52,7 @@ jupyter notebook
 2. Run `HSS_example.ipynb` through the Jupyter Notebook web interface. Details about the API of our software available in [`script/HSS_example.ipynb`](script/HSS_example.ipynb)
 
 ### 3.2 Changing execution parameters
-The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](config/hss_yaml). The parameters are as follows:
+The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](config/hss.yaml). The parameters are as follows:
 - **Object Dimension**
     - ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
     - ***object_thickness***: object thickness (<img src="https://render.githubusercontent.com/render/math?math=mm">)
