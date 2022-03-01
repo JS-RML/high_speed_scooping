@@ -16,6 +16,8 @@ This repository contains the software implementation of **High-Speed Scooping** 
 <img src="media/snatch_card.gif" width="400"> 
 </p>
 
+
+
 ## 2. Prerequisites
 ### 2.1 Hardware
 - [**Universal Robot UR10**](https://www.universal-robots.com/products/ur10-robot/): Industrial Robot Arm 
@@ -39,17 +41,6 @@ sys.path.insert(0,'..') # add the path /high_speed_scooping to the python enviro
 import urx # import urx from /high_speed_scooping 
 ```
 Our version provides the method of getting the instantaneous tool speed by calling `get_tcp_speed()`, which allows us to control the decelerating distance of the robot.
-<!-- *What are the changes? Is `get_tcp_speed()` the new method you created?*
-**Yes, I created the new function `get_tcp_speed()` since the default package doesn't provide the function for getting the tool speed.** -->
-
-<!-- **Note:** Our software requires a minor modification to the `urx` library for getting UR10 tool speed with the function `get_tcp_speed()`. 
-*This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.*
-To do this, add the following lines before `import urx` in the python script:
-This will import the urx package from `/high_speed_scooping/urx` instead of the installed one.-->
-
-<!-- replace the original urx scripts with [ansonmak/python-urx](https://github.com/ansonmak/python-urx/tree/master/urx). *This part can be presented in a more constructive manner; that is, how the task of replacement can be executed. You can also copy the files from your personal repo.* The path to the original urx package: 
-- For local environment: `/usr/local/lib/python3.x/dist-packages/urx`
-- For conda environment: `~/anaconda3/envs/<environment-name>/lib/python3.x/site-packages/urx` -->
 
 ## 3. Run High-Speed Scooping
 ### 3.1 Run with real robot
@@ -61,7 +52,7 @@ jupyter notebook
 2. Run `HSS_example.ipynb` through the Jupyter Notebook web interface. Details about the API of our software available in [`script/HSS_example.ipynb`](script/HSS_example.ipynb)
 
 ### 3.2 Changing execution parameters
-The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The parameters are as follows:
+The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](config/hss_yaml). The parameters are as follows:
 - **Object Dimension**
     - ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
     - ***object_thickness***: object thickness (<img src="https://render.githubusercontent.com/render/math?math=mm">)
@@ -76,7 +67,7 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
     - ***thumb_stiffness***: position gain of thumb before scoop
     - ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
-    - ***digits_speed***: # speed of the digits (bandwidth of input position filter) 
+    - ***digits_speed***: speed of the digits (bandwidth of input position filter)
 - **Scooping Parameters**
     - ***smack_vel***: velocity of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***smack_acc***: acceleration of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
@@ -87,6 +78,18 @@ The parameters of High-Speed Scooping can be specified in `config/hss.yaml`. The
     - ***finger_scoop_stiffness***: position gain of finger after collision
     - ***thumb_scoop_stiffness***: position gain of thumb after collision
     - ***digit_grasp_position***: position of fingertips in the motor frame for grasping the object
+
+The gripper's parameters are illustrated below:
+<p align = "left">
+<img src="media/HSS_contact_parameter.png" width="800"> 
+</p>
+where 
+
+- ***finger_prescoop_position*** = ***F_dist*** / ***object_length***
+- ***thumb_prescoop_position*** = ***T_dist*** / ***object_length***
+- ***gripper_center*** = ***center_dist*** / ***object_length***
+
+
 ## 4. Timeline of High-Speed Scooping
 <p align = "center">
 <img src="media/hss_process.jpg" width="800"> 
