@@ -111,7 +111,7 @@ where
 3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object. -->
 
 #### Robot's motion parameter during the scooping process
-The solid (dotted) lines represents the actual (commanded) value of the parameters. The gray dotted line indicates the moment when the robot detects the collision.
+The solid (dotted) lines represent the actual (commanded) values of the parameter. The gray vertical dotted line indicates the moment when the robot detects the collision.
 <!-- for light theme -->
 <p align = "center">
 <img src="media/plot_light/joint.png#gh-light-mode-only" width="800"> 
