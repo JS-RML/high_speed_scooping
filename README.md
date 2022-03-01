@@ -16,7 +16,8 @@ This repository contains the software implementation of **High-Speed Scooping** 
 <img src="media/snatch_card.gif" width="400"> 
 </p>
 
-
+**Related paper**
+- K. H. Mak, P. Xu, and J. Seo, "High-Speed Scooping Manipulation through Stiffness Control and Direct-Drive Actuation," submitted to *2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)*.
 
 ## 2. Prerequisites
 ### 2.1 Hardware
@@ -67,7 +68,7 @@ The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](co
     - ***thumb_stiffness***: position gain of thumb before scoop
     - ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
-    - ***digits_speed***: speed of the digits (bandwidth of input position filter)
+    - ***digits_speed***: speed of the digits (bandwidth of low-pass filter applied to motor's step input)
 - **Scooping Parameters**
     - ***smack_vel***: velocity of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
     - ***smack_acc***: acceleration of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
@@ -79,7 +80,7 @@ The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](co
     - ***thumb_scoop_stiffness***: position gain of thumb after collision
     - ***digit_grasp_position***: position of fingertips in the motor frame for grasping the object
 
-The gripper's parameters are illustrated below:
+The parameters of setting the gripper's configurations are illustrated below:
 <p align = "left">
 <img src="media/HSS_contact_parameter.png" width="800"> 
 </p>
@@ -107,8 +108,8 @@ where
 2. Accelerate the gripper towards the surface where the height is unknown.
 3. Detect the fingers' collision with the BLDC motors and trigger the deceleration to stop the gripper hitting to the surface. Meanwhile, the fingers are commanded to close with increased stiffness (position gain) to scoop up the object during the process of the thumb tip slides along the surface and penetrates below the object. -->
 
-#### Recorded data during the scooping process
-The dotted lines depict the commanded reference trajectory of motor joint angles. The gray dotted line indicates the moment when the robot detects the collision.
+#### Robot's motion parameter during the scooping process
+The solid (dotted) lines represents the actual (commanded) value of the parameters. The gray dotted line indicates the moment when the robot detects the collision.
 <!-- for light theme -->
 <p align = "center">
 <img src="media/plot_light/joint.png#gh-light-mode-only" width="600"> 
