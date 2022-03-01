@@ -16,8 +16,10 @@ This repository contains the software implementation of **High-Speed Scooping** 
 <img src="media/snatch_card.gif" width="400"> 
 </p>
 
-**Related paper**
-- K. H. Mak, P. Xu, and J. Seo, "High-Speed Scooping Manipulation through Stiffness Control and Direct-Drive Actuation," submitted to *2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)*.
+**Related Paper**
+- K. H. Mak, P. Xu, and J. Seo, "**High-Speed Scooping Manipulation through Stiffness Control and Direct-Drive Actuation**," submitted to *2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)* (under review).
+
+    - [Video attachment](https://drive.google.com/file/d/1us2uz7WQjy4Kop9_YLqqb70ZVLpDpTfv/view?usp=sharing)
 
 ## 2. Prerequisites
 ### 2.1 Hardware
@@ -112,19 +114,17 @@ where
 The solid (dotted) lines represents the actual (commanded) value of the parameters. The gray dotted line indicates the moment when the robot detects the collision.
 <!-- for light theme -->
 <p align = "center">
-<img src="media/plot_light/joint.png#gh-light-mode-only" width="600"> 
-<img src="media/plot_light/gain.png#gh-light-mode-only" width="600"> 
-<img src="media/plot_light/height.png#gh-light-mode-only" width="600"> 
-<img src="media/plot_light/spd.png#gh-light-mode-only" width="600"> 
-<img src="media/plot_light/psi.png#gh-light-mode-only" width="600"> 
+<img src="media/plot_light/joint.png#gh-light-mode-only" width="800"> 
+<img src="media/plot_light/gain.png#gh-light-mode-only" width="800"> 
+<img src="media/plot_light/height.png#gh-light-mode-only" width="800"> 
+<img src="media/plot_light/spd.png#gh-light-mode-only" width="800"> 
 </p>
 <!-- for dark theme -->
 <p align = "center">
-<img src="media/plot_dark/joint.png#gh-dark-mode-only" width="600"> 
-<img src="media/plot_dark/gain.png#gh-dark-mode-only" width="600"> 
-<img src="media/plot_dark/height.png#gh-dark-mode-only" width="600"> 
-<img src="media/plot_dark/spd.png#gh-dark-mode-only" width="600"> 
-<img src="media/plot_dark/psi.png#gh-dark-mode-only" width="600"> 
+<img src="media/plot_dark/joint.png#gh-dark-mode-only" width="800"> 
+<img src="media/plot_dark/gain.png#gh-dark-mode-only" width="800"> 
+<img src="media/plot_dark/height.png#gh-dark-mode-only" width="800"> 
+<img src="media/plot_dark/spd.png#gh-dark-mode-only" width="800"> 
 </p>
 
 ## Maintenance
