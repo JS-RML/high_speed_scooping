@@ -55,23 +55,24 @@ jupyter notebook
 
 ### 3.2 Changing execution parameters
 The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](config/hss.yaml). The parameters are as follows:
-- **Object Dimensions**
-    - ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
-    - ***object_thickness***: object thickness (<img src="https://render.githubusercontent.com/render/math?math=mm">)
-- **Gripper Parameters**
-    - ***gripper_tilt***: tilting angle of the gripper ( <img src="https://render.githubusercontent.com/render/math?math=\^\circ"> )
-    - ***contact_distance***: distance from gripper frame to surface when the fingers are in contact (<img src="https://render.githubusercontent.com/render/math?math=mm">)
-    - ***finger_prescoop_position***: dimensionless F position on the object from the scooping edge
-    - ***thumb_prescoop_position***: dimensionless prescoop position away from the scooping edge
-    - ***gripper_center***: gripper center line dimensionless position on the object from the scooping edge
-    - ***digits_speed***: speed of the digits (bandwidth of low-pass filter applied to motor's step input)
-    - ***finger_prescoop_stiffness***: position p-gain of finger before scoop
-    - ***thumb_prescoop_stiffness***: position p-gain of thumb before scoop
-    - ***finger_scoop_stiffness***: position p-gain of finger for scooping
-    - ***thumb_scoop_stiffness***: position p-gain of thumb for scooping
-    - ***finger_grasp_stiffness***: position p-gain of finger for grasping
-    - ***thumb_grasp_stiffness***: position p-gain of thumb for grasping
-    - ***digit_grasp_position***: position of fingertips in the motor frame for grasping the object
+**Object Dimensions**
+- ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
+- ***object_thickness***: object thickness (<img src="https://render.githubusercontent.com/render/math?math=mm">)
+
+**Gripper Parameters**
+- ***gripper_tilt***: tilting angle of the gripper ( <img src="https://render.githubusercontent.com/render/math?math=\^\circ"> )
+- ***contact_distance***: distance from gripper frame to surface when the fingers are in contact (<img src="https://render.githubusercontent.com/render/math?math=mm">)
+- ***finger_prescoop_position***: dimensionless F position on the object from the scooping edge
+- ***thumb_prescoop_position***: dimensionless prescoop position away from the scooping edge
+- ***gripper_center***: gripper center line dimensionless position on the object from the scooping edge
+- ***digits_speed***: speed of the digits (bandwidth of low-pass filter applied to motor's step input)
+- ***finger_prescoop_stiffness***: position p-gain of finger before scoop
+- ***thumb_prescoop_stiffness***: position p-gain of thumb before scoop
+- ***finger_scoop_stiffness***: position p-gain of finger for scooping
+- ***thumb_scoop_stiffness***: position p-gain of thumb for scooping
+- ***finger_grasp_stiffness***: position p-gain of finger for grasping
+- ***thumb_grasp_stiffness***: position p-gain of thumb for grasping
+- ***digit_grasp_position***: position of fingertips in the motor frame for grasping the object
 The gripper's parameters of setting the initial pose are illustrated as follows:
 <p align = "left">
 <img src="media/HSS_contact_parameter.png" width="800"> 
@@ -82,16 +83,16 @@ where
 - ***thumb_prescoop_position*** = ***T_dist*** / ***object_length***
 - ***gripper_center*** = ***center_dist*** / ***object_length***
 
-- **Arm Parameters**
-    - ***gripper_height***: initial height of gripper in the world frame (<img src="https://render.githubusercontent.com/render/math?math=m">)
-    - ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
-    - ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
-    - ***smack_vel***: velocity of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
-    - ***smack_acc***: acceleration of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
-    - ***slow_dist***: distance of gripper slowing down after collision (<img src="https://render.githubusercontent.com/render/math?math=m">)
-    - ***lift_vel***: velocity of tcp when lifting the object up from the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
-    - ***lift_dist***: distance of gripper lifted off from the surface (<img src="https://render.githubusercontent.com/render/math?math=m">)
-    - ***stop_acc***: deceleration of stopping the robot's motion (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
+**Arm Parameters**
+- ***gripper_height***: initial height of gripper in the world frame (<img src="https://render.githubusercontent.com/render/math?math=m">)
+- ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
+- ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
+- ***smack_vel***: velocity of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
+- ***smack_acc***: acceleration of tcp when approaching to the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
+- ***slow_dist***: distance of gripper slowing down after collision (<img src="https://render.githubusercontent.com/render/math?math=m">)
+- ***lift_vel***: velocity of tcp when lifting the object up from the surface (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
+- ***lift_dist***: distance of gripper lifted off from the surface (<img src="https://render.githubusercontent.com/render/math?math=m">)
+- ***stop_acc***: deceleration of stopping the robot's motion (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
 
 <!-- The arm's motion parameters are illustrated as follows: -->
 
