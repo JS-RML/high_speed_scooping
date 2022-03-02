@@ -85,7 +85,7 @@ where
 - ***thumb_prescoop_position*** = ***T_dist*** / ***object_length***
 - ***gripper_center*** = ***center_dist*** / ***object_length***
 
-**Arm's motion Parameters**
+**Arm's Motion Parameters**
 - ***gripper_height***: initial height of gripper in the world frame (<img src="https://render.githubusercontent.com/render/math?math=m">)
 - ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
 - ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
