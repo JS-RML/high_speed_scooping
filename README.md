@@ -75,7 +75,7 @@ The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](co
 - ***thumb_grasp_stiffness***: position p-gain of thumb for grasping
 - ***digit_grasp_position***: position of fingertips in the motor frame for grasping the object
 
-The gripper's parameters of setting the initial pose are illustrated as follows:
+The gripper's parameters for setting the initial pose are illustrated as follows:
 <p align = "left">
 <img src="media/HSS_contact_parameter.png" width="800"> 
 </p>
@@ -85,7 +85,7 @@ where
 - ***thumb_prescoop_position*** = ***T_dist*** / ***object_length***
 - ***gripper_center*** = ***center_dist*** / ***object_length***
 
-**Arm Parameters**
+**Arm's motion Parameters**
 - ***gripper_height***: initial height of gripper in the world frame (<img src="https://render.githubusercontent.com/render/math?math=m">)
 - ***init_vel***: velocity of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s">)
 - ***init_acc***: acceleration of tcp when initializing gripper pose (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
