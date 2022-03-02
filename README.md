@@ -55,6 +55,7 @@ jupyter notebook
 
 ### 3.2 Changing execution parameters
 The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](config/hss.yaml). The parameters are as follows:
+
 **Object Dimensions**
 - ***object_length***: object length in the scooping direction (<img src="https://render.githubusercontent.com/render/math?math=mm">)
 - ***object_thickness***: object thickness (<img src="https://render.githubusercontent.com/render/math?math=mm">)
@@ -73,6 +74,7 @@ The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](co
 - ***finger_grasp_stiffness***: position p-gain of finger for grasping
 - ***thumb_grasp_stiffness***: position p-gain of thumb for grasping
 - ***digit_grasp_position***: position of fingertips in the motor frame for grasping the object
+
 The gripper's parameters of setting the initial pose are illustrated as follows:
 <p align = "left">
 <img src="media/HSS_contact_parameter.png" width="800"> 
