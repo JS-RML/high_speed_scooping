@@ -77,7 +77,7 @@ The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](co
 
 The gripper's parameters for setting the initial pose are illustrated as follows:
 <p align = "left">
-<img src="media/HSS_contact_parameter.png" width="800"> 
+<img src="media/HSS_gripper_parameters.png" width="800"> 
 </p>
 where
 
@@ -96,7 +96,11 @@ where
 - ***lift_dist***: distance of gripper lifted off from the surface (<img src="https://render.githubusercontent.com/render/math?math=m">)
 - ***stop_acc***: deceleration of stopping the robot's motion (<img src="https://render.githubusercontent.com/render/math?math=m/s^2">)
 
-<!-- The arm's motion parameters are illustrated as follows: -->
+The arm's motion parameters are illustrated as follows:
+<p align = "left">
+<img src="media/HSS_arm_parameters.png" width="800"> 
+</p>
+
 
 ## 4. Timeline of High-Speed Scooping
 <p align = "center">
