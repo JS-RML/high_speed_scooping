@@ -50,7 +50,7 @@ def set_input_bandwidth(axis, BW):
 #     return msg
 
 
-class DDGripper(object):
+class Gripper(object):
 
     def __init__(self, config_name):
         config_file = config_name + ".yaml"
