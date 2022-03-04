@@ -21,10 +21,10 @@ digit_grasp_position: [155, 45] # digit position of grasping the object in motor
 gripper_height: 0.25 # (meter) initial height of gripper in world frame 
 init_vel: 0.05 # (m/s) velocity of tcp when initializing gripper pose
 init_acc: 0.05 # (m/s^2) acceleration...
-smack_vel: 0.4 # (m/s) velocity of tcp when approaching to the surface
-smack_acc: 0.4 # (m/s^2) acceleration...
+smack_vel: 0.2 # (m/s) velocity of tcp when approaching to the surface
+smack_acc: 0.2 # (m/s^2) acceleration...
 slow_dist: 0.02 # (meter) distance of gripper slowing down after collision
-lift_vel: 0.4 # (m/s) velocity of tcp when lifting the object up from the surface 
+lift_vel: 0.2 # (m/s) velocity of tcp when lifting the object up from the surface 
 lift_dist: 0.2 # (meter) distance of gripper lifted off from the surface
 stop_acc: 5 # (m/s^2) deceleration of stopping the robot's motion
 
