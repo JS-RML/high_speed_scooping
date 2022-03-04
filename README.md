@@ -37,13 +37,16 @@ sudo apt install python3 python3-pip
 Cloning our *high-speed scooping* software together with our [*ddh_driver*](https://github.com/HKUST-RML/ddh_driver.git):
 ```shell
 git clone https://github.com/HKUST-RML/high_speed_scooping.git --recurse-submodules
+```
+Then, install the software dependencies:
+```shell
 cd high_speed_scooping
 pip3 install -r requirements.txt
 cd ddh_driver
 pip3 install -r requirements.txt
 ```
 
-Our software takes advantage of the package [`urx`](https://github.com/SintefManufacturing/python-urx). Instead of the default library, use our customized version from `high_speed_scooping/urx` by executing
+Our software takes advantage of the package [`urx`](https://github.com/SintefManufacturing/python-urx). Instead of the default library, use our customized version from `high_speed_scooping/urx` by executing the following in the python script: 
 ```python
 import sys
 sys.path.insert(0,'..') # add the path /high_speed_scooping to the python environment at the first index
