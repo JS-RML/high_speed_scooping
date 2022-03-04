@@ -29,10 +29,17 @@ This repository contains the software implementation of **High-Speed Scooping** 
 ### 2.2 Software
 Our software is implemented with **python3** and tested on **Ubuntu 16.04**.
 
-To install python3 and dependencies on Linux:
+To install python3 on Linux:
 ```shell
 sudo apt install python3 python3-pip
+```
+
+Cloning our *high-speed scooping* software together with our [*ddh_driver*](https://github.com/HKUST-RML/ddh_driver.git):
+```shell
+git clone https://github.com/HKUST-RML/high_speed_scooping.git --recurse-submodules
 cd high_speed_scooping
+pip3 install -r requirements.txt
+cd ddh_driver
 pip3 install -r requirements.txt
 ```
 
