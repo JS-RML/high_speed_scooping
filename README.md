@@ -61,7 +61,7 @@ Our version provides the method of getting the instantaneous tool speed by calli
 cd high_speed_scooping/script
 jupyter notebook
 ```
-2. Run `HSS_example.ipynb` through the Jupyter Notebook web interface. Details about the API of our software available in [`script/HSS_example.ipynb`](script/HSS_example.ipynb)
+2. Run `HSS_example.ipynb` through the Jupyter Notebook web interface. Details of using our software are available in [`script/HSS_example.ipynb`](script/HSS_example.ipynb)
 
 ### 3.2 Changing execution parameters
 The parameters of High-Speed Scooping can be specified in [`config/hss.yaml`](config/hss.yaml). The parameters are as follows:
