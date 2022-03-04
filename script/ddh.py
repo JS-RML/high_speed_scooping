@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Note: This file is used for temporary testing only.
+# Note: This python script is used for temporary testing only.
 # Please use the latest driver in https://github.com/HKUST-RML/ddh_driver
 
 import time
