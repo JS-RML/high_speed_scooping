@@ -12,7 +12,7 @@ from odrive.enums import *
 import yaml
 
 def arm(axis):
-    axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH
+    axis.controller.config.input_mode = INPUT_MODE_POS_FILTER #INPUT_MODE_PASSTHROUGH 
     axis.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
 
 def disarm(axis):
