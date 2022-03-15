@@ -52,7 +52,7 @@ import sys
 sys.path.insert(0,'..') # add the path /high_speed_scooping to the python environment at the first index
 import urx # import urx from /high_speed_scooping 
 ```
-Our version provides the method of getting the instantaneous tool speed by calling `get_tcp_speed()`, which allows us to control the decelerating distance of the robot.
+Our version provides the method of getting the instantaneous tool speed by calling [`get_tcp_speed()`](https://github.com/HKUST-RML/high_speed_scooping/blob/7e14f47793935281553204ad536cfc04bd709773/urx/urrobot.py#L108), which allows us to control the decelerating distance of the robot.
 
 ## 3. Run High-Speed Scooping
 ### 3.1 Run with real robot
