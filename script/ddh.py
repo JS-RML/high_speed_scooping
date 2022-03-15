@@ -322,6 +322,15 @@ class Gripper(object):
         return self.r_to_a3(self.right_finger_dist)
 
     # phi: angle of finger surface relative to x axis
+    def link_to_phi(self, l0, l1, finger):
+        a1 = self.link_to_a1(l0,l1)
+        r = self.a2_to_r(self.link_to_a2(l0,l1))
+        a3 = self.r_to_a3(r)
+        if finger == 'L':
+            return self.a1a3_to_L_phi(a1,a3)
+        elif finger == 'R':
+            return self.a1a3_to_R_phi(a1,a3)
+
     def a1a3_to_L_phi(self, a1, a3):
         return a1 + a3 + self.geometry_beta - 180
             
@@ -602,7 +611,7 @@ if __name__ == "__main__":
     # gripper.set_right_tip((157, -40))
     # while 1:
     #     print("=========================")
-    #     print(gripper.right_tip_pos,gripper.link_to_tip(gripper.link_pos_r0, gripper.link_pos_r1, 'R'))
+    #     print(gripper.left_phi,gripper.link_to_phi(gripper.link_pos_l0, gripper.link_pos_l1, 'L'))
         # print(gripper.left_tip_pos,gripper.right_tip_pos)
         # print((gripper.left_a2 + gripper.right_a2)/2)
         # print(gripper.right_a3)
