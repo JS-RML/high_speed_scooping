@@ -97,6 +97,8 @@ class Gripper(object):
         self.geometry_beta = config['geometry']['beta']
         self.geometry_l3 = config['geometry']['l3']
         self.geometry_gamma = config['geometry']['gamma']
+        self.a2_sing = rad2deg(np.arcsin(self.geometry_l2/self.geometry_l1)) # a2 when distal links in singularity
+        print(self.a2_sing)
         # virtual link formed by l2 and l3
         self._l3 = np.sqrt(self.geometry_l2**2 + self.geometry_l3**2 - 2 * self.geometry_l2 * self.geometry_l3 * np.cos(deg2rad(self.geometry_gamma)))
         # angle between l2 and _l3
@@ -237,89 +239,147 @@ class Gripper(object):
     def link_pos_l1(self):
         return self.motor_pos_l1 + self.L1_link
 
+    def link_to_a1(self, l0, l1):
+        return (l0+l1)/2
+
+    def link_to_a2(self, l0, l1):
+        return np.absolute(l0-l1)/2
+
     @property
     def right_a1(self):
-        return (self.link_pos_r0+self.link_pos_r1)/2
+        return self.link_to_a1(self.link_pos_r0, self.link_pos_r1)
+        # return (self.link_pos_r0+self.link_pos_r1)/2
 
     @property
     def right_a2(self):
-        return (self.link_pos_r1-self.link_pos_r0)/2
+        return self.link_to_a2(self.link_pos_r0, self.link_pos_r1)
+        # return (self.link_pos_r1-self.link_pos_r0)/2
 
     @property
     def left_a1(self):
-        return (self.link_pos_l0+self.link_pos_l1)/2
+        # return (self.link_pos_l0+self.link_pos_l1)/2
+        return self.link_to_a1(self.link_pos_l0, self.link_pos_l1)
 
     @property
     def left_a2(self):
-        return (self.link_pos_l0-self.link_pos_l1)/2
+        return self.link_to_a2(self.link_pos_l0, self.link_pos_l1)
+        # return (self.link_pos_l0-self.link_pos_l1)/2
 
     # r: distance from motor joint to distal joint (base joint of finger)
+    def a2_to_r(self, a2):
+        if a2 > self.a2_sing:
+            return  self.geometry_l1*np.cos(deg2rad(a2))
+        else: 
+            return self.geometry_l1*np.cos(deg2rad(a2)) + np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(a2)))**2)
 
     @property
     def left_finger_dist(self):
-        distal_r = np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(self.left_a2)))**2)
-        if np.isnan(distal_r):
-            distal_r = 0
-        return self.geometry_l1*np.cos(deg2rad(self.left_a2)) + distal_r
+        # distal_r = np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(self.left_a2)))**2)
+        # if np.isnan(distal_r):
+        #     distal_r = 0
+        # return self.geometry_l1*np.cos(deg2rad(self.left_a2)) + distal_r
+        return self.a2_to_r(self.left_a2)
 
     @property
     def right_finger_dist(self):
-        distal_r = np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(self.right_a2)))**2)
-        if np.isnan(distal_r):
-            distal_r = 0
-        return self.geometry_l1*np.cos(deg2rad(self.right_a2)) + distal_r
+        # distal_r = np.sqrt(self.geometry_l2**2 - (self.geometry_l1*np.sin(deg2rad(self.right_a2)))**2)
+        # if np.isnan(distal_r):
+        #     distal_r = 0
+        # return self.geometry_l1*np.cos(deg2rad(self.right_a2)) + distal_r
+        return self.a2_to_r(self.right_a2)
 
     # position of distal joint (base joint of finger) in motor frame
+    def r_a1_to_rx_ry(self, r, a1):
+        # rx, ry
+        return r * np.cos(deg2rad(a1)), r * np.sin(deg2rad(a1))
 
     @property
     def left_finger_pos(self): 
-        x = self.left_finger_dist * np.cos(deg2rad(self.left_a1))
-        y = self.left_finger_dist * np.sin(deg2rad(self.left_a1))
-        return x, y
+        # x = self.left_finger_dist * np.cos(deg2rad(self.left_a1))
+        # y = self.left_finger_dist * np.sin(deg2rad(self.left_a1))
+        # return x, y
+        return self.r_a1_to_rx_ry(self.left_finger_dist, self.left_a1)
 
     @property
     def right_finger_pos(self): 
-        x = self.right_finger_dist * np.cos(deg2rad(self.right_a1))
-        y = self.right_finger_dist * np.sin(deg2rad(self.right_a1))
-        return x, y
+        # x = self.right_finger_dist * np.cos(deg2rad(self.right_a1))
+        # y = self.right_finger_dist * np.sin(deg2rad(self.right_a1))
+        # return x, y
+        return self.r_a1_to_rx_ry(self.right_finger_dist, self.right_a1)
 
-    # a3: angle between distal link (L2) and vector from origin to distal joint
+    # a3: angle between distal link (L2) and vector from origin to distal joint (r)
+    def r_to_a3(self, r):
+        return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - r**2)/(-2 * self.geometry_l2 * r)))
 
     @property
     def left_a3(self):
-        return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.left_finger_dist**2)/(-2 * self.geometry_l2 * self.left_finger_dist)))
+        # return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.left_finger_dist**2)/(-2 * self.geometry_l2 * self.left_finger_dist)))
+        return self.r_to_a3(self.left_finger_dist)
 
     @property
     def right_a3(self):
-        return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.right_finger_dist**2)/(-2 * self.geometry_l2 * self.right_finger_dist)))
+        # return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - self.right_finger_dist**2)/(-2 * self.geometry_l2 * self.right_finger_dist)))
+        return self.r_to_a3(self.right_finger_dist)
 
     # phi: angle of finger surface relative to x axis
+    def a1a3_to_L_phi(self, a1, a3):
+        return a1 + a3 + self.geometry_beta - 180
+            
+    def a1a3_to_R_phi(self, a1, a3):
+        return a1 - (a3 + self.geometry_beta - 180)
 
     @property
     def left_phi(self):
-        return self.left_a1 + self.left_a3 + self.geometry_beta - 180
+        # return self.left_a1 + self.left_a3 + self.geometry_beta - 180
+        return self.a1a3_to_L_phi(self.left_a1, self.left_a3)
 
     @property
     def right_phi(self):
-        return self.right_a1 - (self.right_a3 + self.geometry_beta - 180)
+        # return self.right_a1 - (self.right_a3 + self.geometry_beta - 180)
+        return self.a1a3_to_R_phi(self.right_a1, self.right_a3)
 
     # position of fingertip in motor frame
+    def link_to_tip(self, l0, l1, finger):
+        a1 = self.link_to_a1(l0,l1)
+        r = self.a2_to_r(self.link_to_a2(l0,l1))
+        a3 = self.r_to_a3(r)
+        rxry = self.r_a1_to_rx_ry(r, a1)
+        if finger == 'L':
+            return self.get_L_tip(a1, a3, rxry)
+        elif finger == 'R':
+            return self.get_R_tip(a1,a3,rxry)
+
+    def get_L_tip(self, a1, a3, rxry):
+        # angle of l3 relative to x axis
+        q_tip = a1 + a3 + self.geometry_gamma - 180
+        x = rxry[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
+        y = rxry[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
+        return x, y
 
     @property
     def left_tip_pos(self):
+        # # angle of l3 relative to x axis
+        # q_tip = self.left_a1 + self.left_a3 + self.geometry_gamma - 180
+        # x = self.left_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
+        # y = self.left_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
+        # return x, y
+        return self.get_L_tip(self.left_a1, self.left_a3, self.left_finger_pos)
+
+    def get_R_tip(self, a1, a3, rxry):
         # angle of l3 relative to x axis
-        q_tip = self.left_a1 + self.left_a3 + self.geometry_gamma - 180
-        x = self.left_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
-        y = self.left_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
+        q_tip = a1 - (a3 + self.geometry_gamma - 180)
+        x = rxry[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
+        y = rxry[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
         return x, y
 
     @property
     def right_tip_pos(self):
-        # angle of l3 relative to x axis
-        q_tip = self.right_a1 - (self.right_a3 + self.geometry_gamma - 180)
-        x = self.right_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
-        y = self.right_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
-        return x, y
+        # # angle of l3 relative to x axis
+        # q_tip = self.right_a1 - (self.right_a3 + self.geometry_gamma - 180)
+        # x = self.right_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
+        # y = self.right_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
+        # return x, y
+        return self.get_R_tip(self.right_a1, self.right_a3, self.right_finger_pos)
 
     # first control the position of individual links
 
@@ -533,8 +593,8 @@ class Gripper(object):
 
 if __name__ == "__main__":
     # rospy.init_node('ddh_driver_node')
-    gripper = DDGripper("ddh_scooping")
-    gripper.arm()
+    gripper = Gripper("ddh_scooping")
+    # gripper.arm()
     # gripper.startup_dance()
     # gripper.set_left_tip((150,0))
     # gripper.set_right_tip((150,0))
@@ -542,9 +602,10 @@ if __name__ == "__main__":
     # gripper.set_right_tip((157, -40))
     # while 1:
     #     print("=========================")
-    #     # print(gripper.left_tip_pos,gripper.right_tip_pos)
-    #     # print((gripper.left_a2 + gripper.right_a2)/2)
-    #     # print(gripper.right_a3)
-    #     # time.sleep(0.2)
+    #     print(gripper.right_tip_pos,gripper.link_to_tip(gripper.link_pos_r0, gripper.link_pos_r1, 'R'))
+        # print(gripper.left_tip_pos,gripper.right_tip_pos)
+        # print((gripper.left_a2 + gripper.right_a2)/2)
+        # print(gripper.right_a3)
+        # time.sleep(0.2)
 
     # rospy.spin()
