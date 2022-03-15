@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+
+# Note: This python script is used for temporary testing only.
+
 import os
 import time
 import json
@@ -6,6 +9,47 @@ import threading
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 import numpy as np
+
+
+
+def save_subplot(save_dir, fig, ax, x_border, y_border):
+    fig.savefig(save_dir, bbox_inches=ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted()).expanded(x_border, y_border))
+
+def get_cmd_spd(plot_item, scoop):
+    # compute commanded spd
+    cmd_spd = [0]
+    cmd_t = [0]
+    cmd_spd.append(0)
+    t_wp = 130 # hardcode delay 
+    cmd_t.append(t_wp)
+    # reached const approaching spd
+    cmd_spd.append(-scoop.smack_vel)
+    t_wp = t_wp + round(scoop.smack_vel/scoop.smack_acc)*1000
+    cmd_t.append(t_wp)
+    # reached collision
+    cmd_spd.append(-scoop.smack_vel)
+    t_wp = plot_item['t_col'][0]
+    cmd_t.append(t_wp)
+    # reached const lifting spd
+    acc_slow = (scoop.smack_vel**2) / (2*scoop.slow_dist)
+    t_liftAcc = scoop.lift_vel / acc_slow
+    s_liftAcc = 0.5 * acc_slow * t_liftAcc**2
+    t_liftConstSpd = (scoop.lift_dist-s_liftAcc) / scoop.lift_vel
+    cmd_spd.append(scoop.lift_vel)
+    t_wp = t_wp + round(t_liftAcc*1000)
+    cmd_t.append(t_wp)
+    cmd_spd.append(scoop.lift_vel)
+    t_wp = t_wp + round(t_liftConstSpd*1000)
+    cmd_t.append(t_wp)
+    # stop to zero spd
+    cmd_spd.append(0)
+    t_stop = scoop.lift_vel / scoop.stop_acc
+    t_wp = t_wp + round(t_stop*1000)
+    cmd_t.append(t_wp)
+    # end point
+    cmd_spd.append(0)
+    cmd_t.append(plot_item['t1'][-1])
+    return cmd_spd, cmd_t
 
 
 
@@ -130,7 +174,7 @@ class DataLogger:
         ax1[0].plot(plot_item['t1'], plot_item['R1_cmd'], color='tab:red', linestyle='--')
         if self.collision_time is not None: ax1[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5', linestyle='--')
         ax1[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
-        ax1[0].set_title("Readings of motor angles")
+        ax1[0].set_title("Motor joint angles")
         ax1[0].set_ylabel("Angle (degree)")
         ax1[0].set_xlabel("Time (ms)")
         ax1[0].set_xlim((x_min,x_max))
@@ -139,7 +183,7 @@ class DataLogger:
         # plot angle of attack
         ax1[1].plot(plot_item['t3'], plot_item['psi'])
         if self.collision_time is not None: ax1[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
-        ax1[1].set_title("Readings of psi (angle of attack)")
+        ax1[1].set_title("Psi (angle of attack)")
         ax1[1].set_ylabel("Angle (degree)")
         ax1[1].set_xlabel("Time (ms)")
         ax1[1].set_xlim((x_min,x_max))
@@ -150,8 +194,8 @@ class DataLogger:
         ax2[0].plot(plot_item['t1'], plot_item['R_stiff'], label='T_Kp')
         if self.collision_time is not None: ax2[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax2[0].legend(loc='lower right').get_frame().set_linewidth(1.0)
-        ax2[0].set_title("Stiffness of fingers (proportional gain of position controller)")
-        ax2[0].set_ylabel("Gain ((turn/s) / turn)")
+        ax2[0].set_title("Digit stiffness")
+        ax2[0].set_ylabel("P-Gain ((turn/s) / turn)")
         ax2[0].set_xlabel("Time (ms)")
         ax2[0].set_xlim((x_min,x_max))
         ax2[0].grid(True)
@@ -164,54 +208,19 @@ class DataLogger:
         # ax3[0].plot(plot_item['t2'], plot_item['UR_Z'])
         if self.collision_time is not None: ax3[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax3[0].set_title("Height of arm")
-        ax3[0].set_ylabel("Height (m)")
+        ax3[0].set_ylabel("z-position (m)")
         ax3[0].set_xlabel("Time (ms)")
         ax3[0].set_xlim((x_min,x_max))
         ax3[0].grid(True)
 
-        # compute commanded spd
-        cmd_spd = [0]
-        cmd_t = [0]
-        cmd_spd.append(0)
-        t_wp = 130 # hardcode delay 
-        cmd_t.append(t_wp)
-        # reached const approaching spd
-        cmd_spd.append(-self.scoop.smack_vel)
-        t_wp = t_wp + round(self.scoop.smack_vel/self.scoop.smack_acc)*1000
-        cmd_t.append(t_wp)
-        # reached collision
-        cmd_spd.append(-self.scoop.smack_vel)
-        t_wp = plot_item['t_col'][0]
-        cmd_t.append(t_wp)
-        # reached const lifting spd
-        acc_slow = (self.scoop.smack_vel**2) / (2*self.scoop.slow_dist)
-        t_liftAcc = self.scoop.lift_vel / acc_slow
-        s_liftAcc = 0.5 * acc_slow * t_liftAcc**2
-        t_liftConstSpd = (self.scoop.lift_dist-s_liftAcc) / self.scoop.lift_vel
-        cmd_spd.append(self.scoop.lift_vel)
-        t_wp = t_wp + round(t_liftAcc*1000)
-        cmd_t.append(t_wp)
-        cmd_spd.append(self.scoop.lift_vel)
-        t_wp = t_wp + round(t_liftConstSpd*1000)
-        cmd_t.append(t_wp)
-        # stop to zero spd
-        cmd_spd.append(0)
-        t_stop = self.scoop.lift_vel / self.scoop.stop_acc
-        t_wp = t_wp + round(t_stop*1000)
-        cmd_t.append(t_wp)
-        # end point
-        cmd_spd.append(0)
-        cmd_t.append(plot_item['t1'][-1])
-        # save data in dict
-        plot_item['cmd_spd'] = cmd_spd
-        plot_item['cmd_t'] = cmd_t
+        plot_item['cmd_spd'], plot_item['cmd_t'] = get_cmd_spd(plot_item, self.scoop)
 
         # plot actual ur z spd
         ax3[1].plot(plot_item['cmd_t'],plot_item['cmd_spd'], linestyle='--', color='tab:red')
         ax3[1].plot(plot_item['t1'], plot_item['UR_Z_SPD'], color='tab:red')
         if self.collision_time is not None: ax3[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax3[1].set_title("Speed of arm")
-        ax3[1].set_ylabel("Speed (m/s)")
+        ax3[1].set_ylabel("z-speed (m/s)")
         ax3[1].set_xlabel("Time (ms)")
         ax3[1].set_xlim((x_min,x_max))
         ax3[1].grid(True)
@@ -221,17 +230,13 @@ class DataLogger:
             save_dir = 'plots/' + str(currentTime)
             os.makedirs(save_dir)
 
-            # save two subplots as two figs
-            fig1sub1 = ax1[0].get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
-            fig1sub2 = ax1[1].get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
-            fig1.savefig(save_dir + '/joint.png', bbox_inches=fig1sub1.expanded(1.23, 1.23))
-            fig1.savefig(save_dir + '/psi.png', bbox_inches=fig1sub2.expanded(1.23, 1.23))
-            fig2sub1 = ax2[0].get_window_extent().transformed(fig2.dpi_scale_trans.inverted())
-            fig2.savefig(save_dir + '/gain.png', bbox_inches=fig2sub1.expanded(1.23, 1.23))
-            fig3sub1 = ax3[0].get_window_extent().transformed(fig3.dpi_scale_trans.inverted())
-            fig3sub2 = ax3[1].get_window_extent().transformed(fig3.dpi_scale_trans.inverted())
-            fig3.savefig(save_dir + '/height.png', bbox_inches=fig3sub1.expanded(1.23, 1.23))
-            fig3.savefig(save_dir + '/spd.png', bbox_inches=fig3sub2.expanded(1.23, 1.23))
+            # save subplots as figs
+            save_subplot(save_dir + '/joint.png', fig1, ax1[0], 1.23, 1.23)
+            save_subplot(save_dir + '/psi.png', fig1, ax1[1], 1.23, 1.23)
+            save_subplot(save_dir + '/gain.png', fig2, ax2[0], 1.23, 1.23)
+            save_subplot(save_dir + '/z_pos.png', fig3, ax3[0], 1.23, 1.23)
+            save_subplot(save_dir + '/z_spd.png', fig3, ax3[1], 1.23, 1.23)
+
             # save logged data
             with open(save_dir + '/data.json', mode='w') as f:
                 json.dump(plot_item, f)
