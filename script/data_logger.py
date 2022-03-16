@@ -7,6 +7,7 @@ import time
 import json
 import threading
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from scipy.interpolate import interp1d
 import numpy as np
 from numpy import deg2rad, rad2deg
@@ -51,6 +52,39 @@ def get_cmd_spd(plot_item, scoop):
     cmd_spd.append(0)
     cmd_t.append(plot_item['t1'][-1])
     return cmd_spd, cmd_t
+
+def truncate_pos_data(x,y,displacement_threshold):
+    '''
+    Truncate redundent position data from the start and end if the distance of neighbour points are less than the threshold
+    '''
+    # truncate from the start
+    n = len(x)
+    trunc_idx = 0
+    for i in range(n-1):
+        a = np.array((x[i] ,y[i]))
+        b = np.array((x[i+1], y[i+1]))
+        dist_change = np.linalg.norm(a-b)
+        if dist_change > displacement_threshold:
+            trunc_idx = i
+            break
+    x = x[trunc_idx:]
+    y = y[trunc_idx:]
+
+    # truncate from the end
+    n = len(x)
+    trunc_idx = 0
+    for i in range(n-1, 0, -1):
+        a = np.array((x[i] ,y[i]))
+        b = np.array((x[i-1], y[i-1]))
+        dist_change = np.linalg.norm(a-b)
+        if dist_change > displacement_threshold:
+            trunc_idx = i
+            break
+    x = x[:trunc_idx]
+    y = y[:trunc_idx]
+
+    return x,y 
+
 
 def highResPoints(x,y,factor=10):
     '''
@@ -252,51 +286,48 @@ class DataLogger:
         ax2[0].grid(True)
 
         # plot fingertips trajectory
+        L_tip_x = []
+        L_tip_y = []
         R_tip_x = []
         R_tip_y = []
         for i in range(len(plot_item['t1'])):
-            x, y = self.ddh.link_to_tip(plot_item['R0'][i],plot_item['R1'][i],'R')
-            # transform from motor frame to world frame
+            # get tip position in motor frame
+            lx, ly = self.ddh.link_to_tip(plot_item['L0'][i],plot_item['L1'][i],'L')
+            rx, ry = self.ddh.link_to_tip(plot_item['R0'][i],plot_item['R1'][i],'R')
+            # shift from motor frame to gripper frame
+            ly = ly + self.scoop.P_g_L[1]
+            ry = ry + self.scoop.P_g_R[1]
+            # transform the orientation from motor frame to world frame
             q = self.scoop.theta - 180 # angle to rotate 
-            x_world = x * np.cos(deg2rad(q)) - y * np.sin(deg2rad(q))
-            y_world = y * np.cos(deg2rad(q)) + x * np.sin(deg2rad(q))
-            R_tip_x.append(x_world)
-            R_tip_y.append(y_world)
-            # R_tip_x.append(x)
-            # R_tip_y.append(y)
+            lx_world = lx * np.cos(deg2rad(q)) - ly * np.sin(deg2rad(q))
+            ly_world = ly * np.cos(deg2rad(q)) + lx * np.sin(deg2rad(q))
+            rx_world = rx * np.cos(deg2rad(q)) - ry * np.sin(deg2rad(q))
+            ry_world = ry * np.cos(deg2rad(q)) + rx * np.sin(deg2rad(q))
+            L_tip_x.append(lx_world)
+            L_tip_y.append(ly_world)
+            R_tip_x.append(rx_world)
+            R_tip_y.append(ry_world)
 
-        # truncate redundent points from the start by given displacement
-        n = len(R_tip_x)
-        trunc_idx = 0
-        for i in range(n-1):
-            a = np.array((R_tip_x[i] ,R_tip_y[i]))
-            b = np.array((R_tip_x[i+1], R_tip_y[i+1]))
-            dist_change = np.linalg.norm(a-b)
-            if dist_change > 0.5:
-                trunc_idx = i
-                break
-        R_tip_x = R_tip_x[trunc_idx:]
-        R_tip_y = R_tip_y[trunc_idx:]
+        L_tip_x,L_tip_y = truncate_pos_data(L_tip_x,L_tip_y, 0.3)
+        R_tip_x,R_tip_y = truncate_pos_data(R_tip_x,R_tip_y, 0.3)
 
-        # truncate redundent points from the end by given displacement
-        n = len(R_tip_x)
-        trunc_idx = 0
-        for i in range(n-1, 0, -1):
-            a = np.array((R_tip_x[i] ,R_tip_y[i]))
-            b = np.array((R_tip_x[i-1], R_tip_y[i-1]))
-            dist_change = np.linalg.norm(a-b)
-            if dist_change > 0.5:
-                trunc_idx = i
-                break
-        R_tip_x = R_tip_x[:trunc_idx]
-        R_tip_y = R_tip_y[:trunc_idx]
-
-        x,y = highResPoints(R_tip_x,R_tip_y,10)
-        n = len(x)
-        for j in range(n-1):
-            ax2[1].plot(x[j:j+2],y[j:j+2], color='tab:red', alpha = float(j)/(n-1)) 
-        # ax2[1].plot(R_tip_x,R_tip_y)
+        lx,ly = highResPoints(L_tip_x,L_tip_y,10)
+        ln = len(lx)
+        for i in range(ln-1):
+            ax2[1].plot(lx[i:i+2],ly[i:i+2], color='tab:blue', alpha = float(i)/(ln-1)) 
+        
+        rx,ry = highResPoints(R_tip_x,R_tip_y,10)
+        rn = len(rx)
+        for j in range(rn-1):
+            ax2[1].plot(rx[j:j+2],ry[j:j+2], color='tab:red', alpha = float(j)/(rn-1)) 
+        colors = ['tab:blue', 'tab:red']
+        lines = [Line2D([0], [0], color=c) for c in colors]
+        labels = ['Fingertip', 'Thumbtip']
+        ax2[1].legend(lines, labels)
         ax2[1].axis('equal')
+        ax2[1].set_title("Digit tips position")
+        ax2[1].set_ylabel("y-position (mm)")
+        ax2[1].set_xlabel("x-position (mm)")
 
         # plot ur z
         ur_z_interp = interp1d(plot_item['t2'],plot_item['UR_Z'],kind="cubic")
