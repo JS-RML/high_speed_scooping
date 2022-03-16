@@ -9,6 +9,7 @@ import threading
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 import numpy as np
+from numpy import deg2rad, rad2deg
 
 
 
@@ -51,6 +52,51 @@ def get_cmd_spd(plot_item, scoop):
     cmd_t.append(plot_item['t1'][-1])
     return cmd_spd, cmd_t
 
+def highResPoints(x,y,factor=10):
+    '''
+    Take points listed in two vectors and return them at a higher
+    resultion. Create at least factor*len(x) new points that include the
+    original points and those spaced in between.
+
+    Returns new x and y arrays as a tuple (x,y).
+    '''
+
+    # r is the distance spanned between pairs of points
+    r = [0]
+    for i in range(1,len(x)):
+        dx = x[i]-x[i-1]
+        dy = y[i]-y[i-1]
+        r.append(np.sqrt(dx*dx+dy*dy))
+    r = np.array(r)
+
+    # rtot is a cumulative sum of r, it's used to save time
+    rtot = []
+    for i in range(len(r)):
+        rtot.append(r[0:i].sum())
+    rtot.append(r.sum())
+
+    dr = rtot[-1]/(len(x)*factor-1)
+    xmod=[x[0]]
+    ymod=[y[0]]
+    rPos = 0 # current point on walk along data
+    rcount = 1 
+    while rPos < r.sum():
+        x1,x2 = x[rcount-1],x[rcount]
+        y1,y2 = y[rcount-1],y[rcount]
+        dpos = rPos-rtot[rcount] 
+        theta = np.arctan2((x2-x1),(y2-y1))
+        rx = np.sin(theta)*dpos+x1
+        ry = np.cos(theta)*dpos+y1
+        xmod.append(rx)
+        ymod.append(ry)
+        rPos+=dr
+        while rPos > rtot[rcount+1]:
+            rPos = rtot[rcount+1]
+            rcount+=1
+            if rcount >= len(rtot)-1: #rcount>rtot[-1]:
+                break
+
+    return xmod,ymod
 
 
 class DataLogger:
@@ -61,7 +107,7 @@ class DataLogger:
         self.scoop = scooping_primitives
 
         self.keep_logging = False
-        self.log_rates = [300, 100, 200] # no. of element determines no. of threads
+        self.log_rates = [500, 100, 200] # no. of element determines no. of threads
         self.logging_threads = [None for i in self.log_rates]
         self.logged_data_sets = [[] for i in self.log_rates]
         self.collision_time = None
@@ -71,8 +117,6 @@ class DataLogger:
             time.sleep(1.0/self.log_rates[0])
             data = {
                 't1': round(time.time() * 1000),
-                'L_stiff': self.ddh.cmd_stiff_l,
-                'R_stiff': self.ddh.cmd_stiff_r,
                 'L0': self.ddh.link_pos_l0,
                 'L1': self.ddh.link_pos_l1,
                 'R0': self.ddh.link_pos_r0,
@@ -80,13 +124,9 @@ class DataLogger:
                 'L0_cmd': self.ddh.cmd_pos_l0,
                 'L1_cmd': self.ddh.cmd_pos_l1,
                 'R0_cmd': self.ddh.cmd_pos_r0,
-                'R1_cmd': self.ddh.cmd_pos_r1,
-                'UR_Z_SPD': self.ur.get_tcp_speed(wait=False)[2],
+                'R1_cmd': self.ddh.cmd_pos_r1
             }
             self.logged_data_sets[0].append(data)
-            if self.scoop.collided:
-                self.collision_time = data['t1']
-                self.scoop.collided = False
         
     def logging_job2(self):
         while self.keep_logging:
@@ -102,9 +142,14 @@ class DataLogger:
             time.sleep(1.0/self.log_rates[2])
             data = {
                 't3': round(time.time() * 1000),
-                'psi': self.ddh.right_phi + self.scoop.theta
+                'L_stiff': self.ddh.cmd_stiff_l,
+                'R_stiff': self.ddh.cmd_stiff_r,
+                'UR_Z_SPD': self.ur.get_tcp_speed(wait=False)[2],
             }
             self.logged_data_sets[2].append(data)
+            if self.scoop.collided:
+                self.collision_time = data['t3']
+                self.scoop.collided = False
 
     @property
     def logged(self):
@@ -149,7 +194,7 @@ class DataLogger:
                     else: plot_item[name].append(data[name])
         
         if self.collision_time is not None:
-            self.collision_time = self.collision_time - self.logged_data_sets[0][0]['t1'] #self.logged_data1[0]['t1']
+            self.collision_time = self.collision_time - self.logged_data_sets[2][0]['t3']
             plot_item['t_col'] = [self.collision_time]
             print("Collision time: {} ms".format(self.collision_time))
         
@@ -180,8 +225,14 @@ class DataLogger:
         ax1[0].set_xlim((x_min,x_max))
         ax1[0].grid(True)
 
+        #compute psi angle from link angle
+        psi = []
+        for i in range(len(plot_item['t1'])):
+            psi.append(self.ddh.link_to_phi(plot_item['R0'][i],plot_item['R1'][i],'R')+self.scoop.theta)
+        plot_item['psi'] = psi
+
         # plot angle of attack
-        ax1[1].plot(plot_item['t3'], plot_item['psi'])
+        ax1[1].plot(plot_item['t1'], plot_item['psi'])
         if self.collision_time is not None: ax1[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax1[1].set_title("Psi (angle of attack)")
         ax1[1].set_ylabel("Angle (degree)")
@@ -190,8 +241,8 @@ class DataLogger:
         ax1[1].grid(True)
 
         # plot stiffness
-        ax2[0].plot(plot_item['t1'], plot_item['L_stiff'], label='F_Kp')
-        ax2[0].plot(plot_item['t1'], plot_item['R_stiff'], label='T_Kp')
+        ax2[0].plot(plot_item['t3'], plot_item['L_stiff'], label='F_Kp')
+        ax2[0].plot(plot_item['t3'], plot_item['R_stiff'], label='T_Kp')
         if self.collision_time is not None: ax2[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
         ax2[0].legend(loc='lower right').get_frame().set_linewidth(1.0)
         ax2[0].set_title("Digit stiffness")
@@ -199,6 +250,53 @@ class DataLogger:
         ax2[0].set_xlabel("Time (ms)")
         ax2[0].set_xlim((x_min,x_max))
         ax2[0].grid(True)
+
+        # plot fingertips trajectory
+        R_tip_x = []
+        R_tip_y = []
+        for i in range(len(plot_item['t1'])):
+            x, y = self.ddh.link_to_tip(plot_item['R0'][i],plot_item['R1'][i],'R')
+            # transform from motor frame to world frame
+            q = self.scoop.theta - 180 # angle to rotate 
+            x_world = x * np.cos(deg2rad(q)) - y * np.sin(deg2rad(q))
+            y_world = y * np.cos(deg2rad(q)) + x * np.sin(deg2rad(q))
+            R_tip_x.append(x_world)
+            R_tip_y.append(y_world)
+            # R_tip_x.append(x)
+            # R_tip_y.append(y)
+
+        # truncate redundent points from the start by given displacement
+        n = len(R_tip_x)
+        trunc_idx = 0
+        for i in range(n-1):
+            a = np.array((R_tip_x[i] ,R_tip_y[i]))
+            b = np.array((R_tip_x[i+1], R_tip_y[i+1]))
+            dist_change = np.linalg.norm(a-b)
+            if dist_change > 0.5:
+                trunc_idx = i
+                break
+        R_tip_x = R_tip_x[trunc_idx:]
+        R_tip_y = R_tip_y[trunc_idx:]
+
+        # truncate redundent points from the end by given displacement
+        n = len(R_tip_x)
+        trunc_idx = 0
+        for i in range(n-1, 0, -1):
+            a = np.array((R_tip_x[i] ,R_tip_y[i]))
+            b = np.array((R_tip_x[i-1], R_tip_y[i-1]))
+            dist_change = np.linalg.norm(a-b)
+            if dist_change > 0.5:
+                trunc_idx = i
+                break
+        R_tip_x = R_tip_x[:trunc_idx]
+        R_tip_y = R_tip_y[:trunc_idx]
+
+        x,y = highResPoints(R_tip_x,R_tip_y,10)
+        n = len(x)
+        for j in range(n-1):
+            ax2[1].plot(x[j:j+2],y[j:j+2], color='tab:red', alpha = float(j)/(n-1)) 
+        # ax2[1].plot(R_tip_x,R_tip_y)
+        ax2[1].axis('equal')
 
         # plot ur z
         ur_z_interp = interp1d(plot_item['t2'],plot_item['UR_Z'],kind="cubic")
@@ -213,12 +311,12 @@ class DataLogger:
         ax3[0].set_xlim((x_min,x_max))
         ax3[0].grid(True)
 
-        plot_item['cmd_spd'], plot_item['cmd_t'] = get_cmd_spd(plot_item, self.scoop)
-
         # plot actual ur z spd
-        ax3[1].plot(plot_item['cmd_t'],plot_item['cmd_spd'], linestyle='--', color='tab:red')
-        ax3[1].plot(plot_item['t1'], plot_item['UR_Z_SPD'], color='tab:red')
-        if self.collision_time is not None: ax3[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+        if self.collision_time is not None:
+            plot_item['cmd_spd'], plot_item['cmd_t'] = get_cmd_spd(plot_item, self.scoop)
+            ax3[1].plot(plot_item['cmd_t'],plot_item['cmd_spd'], linestyle='--', color='tab:red')
+            ax3[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+        ax3[1].plot(plot_item['t3'], plot_item['UR_Z_SPD'], color='tab:red')
         ax3[1].set_title("Speed of arm")
         ax3[1].set_ylabel("z-speed (m/s)")
         ax3[1].set_xlabel("Time (ms)")
