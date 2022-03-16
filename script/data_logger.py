@@ -324,9 +324,10 @@ class DataLogger:
         lines = [Line2D([0], [0], color=c) for c in colors]
         labels = ['Fingertip', 'Thumbtip']
         ax2[1].legend(lines, labels)
+        ax2[1].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax2[1].axis('equal')
         ax2[1].set_title("Digit tips position")
-        ax2[1].set_ylabel("y-position (mm)")
+        ax2[1].set_ylabel("z-position (mm)")
         ax2[1].set_xlabel("x-position (mm)")
 
         # plot ur z
