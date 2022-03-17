@@ -211,7 +211,7 @@ class HighSpeedScooping:
         print(init_pose.pose_vector)
         self.ur.set_pose(init_pose, self.init_vel, self.init_acc)
 
-        self.ddh.arm(pos_gain = 20, BW = 50)
+        self.ddh.arm(pos_gain = 5, BW = 100)
         r = 150
         angle_start = 45 # relative to motor x axis
         angle_end = -45
@@ -226,7 +226,7 @@ class HighSpeedScooping:
             # self.ddh.set_left_tip((x,-y))
             if q == angle_start:
                 self.wait_tip_idle()
-                self.ddh.set_bandwidth(1)
+                self.ddh.set_bandwidth(5)
                 logger.logged = True
         
         self.wait_tip_idle()
