@@ -2,6 +2,7 @@
 import time
 from math import sin, cos, radians, pi
 import numpy as np
+from numpy import deg2rad, rad2deg
 import yaml
 import math3d as m3d
 
@@ -180,6 +181,57 @@ class HighSpeedScooping:
             self.ur.stopl(5)
             print("Error occurred:")
             print(err)
+
+    def wait_tip_idle(self, dist_threshold=0.5):
+        prev_L_tip = np.array([0,0])
+        prev_R_tip = np.array([0,0])
+        cur_L_tip = np.array([100,100])
+        cur_R_tip = np.array([100,100])
+        while np.linalg.norm(cur_L_tip - prev_L_tip) > dist_threshold or np.linalg.norm(cur_R_tip - prev_R_tip) > dist_threshold:
+            time.sleep(0.2)
+            prev_L_tip = cur_L_tip
+            prev_R_tip = cur_R_tip
+            cur_L_tip = np.array(self.ddh.left_tip_pos)
+            cur_R_tip = np.array(self.ddh.right_tip_pos)
+
+    def prescooping_search(self, object_2D_pose, logger):
+        x_obj, y_obj, q_obj = object_2D_pose
+
+        # set arm pose
+        tcp = np.matmul(self.T_t_g, np.append([0,0,0], 1))[:-1]
+        self.ur.set_tcp(np.append(tcp/1000, [0,0,0])) # set gripper frame as tcp
+        init_pose = m3d.Transform()
+        # work in -ve x and +ve y region only
+        init_pose.pos.x = x_obj + (self.fg_dist - self.obj_l/2) * cos(radians(q_obj)) / 1000
+        init_pose.pos.y = y_obj + (self.fg_dist - self.obj_l/2) * sin(radians(q_obj)) / 1000
+        init_pose.pos.z = self.grip_h
+        init_pose.orient.rotate_xb(pi)
+        init_pose.orient.rotate_zt(radians(90-q_obj))
+        print("Setting pose: ")
+        print(init_pose.pose_vector)
+        self.ur.set_pose(init_pose, self.init_vel, self.init_acc)
+
+        self.ddh.arm(pos_gain = 20, BW = 50)
+        r = 150
+        angle_start = 45 # relative to motor x axis
+        angle_end = -45
+        left_angle = 0
+        lx = r * np.cos(deg2rad(left_angle))
+        ly = r * np.sin(deg2rad(left_angle))
+        self.ddh.set_left_tip((lx,ly))
+        for q in range(angle_start, angle_end, -1):
+            x = r * np.cos(deg2rad(q))
+            y = r * np.sin(deg2rad(q))
+            self.ddh.set_right_tip((x,y))
+            # self.ddh.set_left_tip((x,-y))
+            if q == angle_start:
+                self.wait_tip_idle()
+                self.ddh.set_bandwidth(1)
+                logger.logged = True
+        
+        self.wait_tip_idle()
+        logger.logged = False
+            
 
     def wall_init(self, obj_x_pos, thumb_offset, side_scoop = False):
         ''' Pick up object leaning on the wall, robot approaching horizontally, Finger as R, thumb as L

@@ -67,23 +67,27 @@ def truncate_pos_data(x,y,displacement_threshold):
         if dist_change > displacement_threshold:
             trunc_idx = i
             break
-    x = x[trunc_idx:]
-    y = y[trunc_idx:]
+    x_trunc = x[trunc_idx:]
+    y_trunc = y[trunc_idx:]
 
     # truncate from the end
-    n = len(x)
+    n = len(x_trunc)
     trunc_idx = 0
     for i in range(n-1, 0, -1):
-        a = np.array((x[i] ,y[i]))
-        b = np.array((x[i-1], y[i-1]))
+        a = np.array((x_trunc[i] ,y_trunc[i]))
+        b = np.array((x_trunc[i-1], y_trunc[i-1]))
         dist_change = np.linalg.norm(a-b)
         if dist_change > displacement_threshold:
             trunc_idx = i
             break
-    x = x[:trunc_idx]
-    y = y[:trunc_idx]
+    x_trunc = x_trunc[:trunc_idx]
+    y_trunc = y_trunc[:trunc_idx]
 
-    return x,y 
+    # return oringinal data if all the point below threshold
+    if len(x_trunc) == 0:
+        return x, y
+
+    return x_trunc, y_trunc
 
 
 def highResPoints(x,y,factor=10):
@@ -290,6 +294,9 @@ class DataLogger:
         L_tip_y = []
         R_tip_x = []
         R_tip_y = []
+        # get current gripper tilt angle 
+        theta = 90 - rad2deg(self.ur.get_orientation().to_euler('XZX')[2])
+        print('Gripper tilt angle: {:.2f} degree'.format(theta))
         for i in range(len(plot_item['t1'])):
             # get tip position in motor frame
             lx, ly = self.ddh.link_to_tip(plot_item['L0'][i],plot_item['L1'][i],'L')
@@ -298,7 +305,7 @@ class DataLogger:
             ly = ly + self.scoop.P_g_L[1]
             ry = ry + self.scoop.P_g_R[1]
             # transform the orientation from motor frame to world frame
-            q = self.scoop.theta - 180 # angle to rotate 
+            q = theta - 180 # angle to rotate 
             lx_world = lx * np.cos(deg2rad(q)) - ly * np.sin(deg2rad(q))
             ly_world = ly * np.cos(deg2rad(q)) + lx * np.sin(deg2rad(q))
             rx_world = rx * np.cos(deg2rad(q)) - ry * np.sin(deg2rad(q))
@@ -311,20 +318,21 @@ class DataLogger:
         L_tip_x,L_tip_y = truncate_pos_data(L_tip_x,L_tip_y, 0.3)
         R_tip_x,R_tip_y = truncate_pos_data(R_tip_x,R_tip_y, 0.3)
 
-        lx,ly = highResPoints(L_tip_x,L_tip_y,10)
+        lx,ly = highResPoints(L_tip_x,L_tip_y,5)
         ln = len(lx)
         for i in range(ln-1):
             ax2[1].plot(lx[i:i+2],ly[i:i+2], color='tab:blue', alpha = float(i)/(ln-1)) 
         
-        rx,ry = highResPoints(R_tip_x,R_tip_y,10)
+        rx,ry = highResPoints(R_tip_x,R_tip_y,5)
         rn = len(rx)
         for j in range(rn-1):
             ax2[1].plot(rx[j:j+2],ry[j:j+2], color='tab:red', alpha = float(j)/(rn-1)) 
         colors = ['tab:blue', 'tab:red']
         lines = [Line2D([0], [0], color=c) for c in colors]
         labels = ['Fingertip', 'Thumbtip']
-        ax2[1].legend(lines, labels)
-        ax2[1].legend(loc='upper right').get_frame().set_linewidth(1.0)
+        ax2[1].legend(lines, labels, loc='upper right').get_frame().set_linewidth(1.0)
+        ax2[1].set_xticks(range(-300,300,20))
+        ax2[1].set_yticks(range(-300,300,20))
         ax2[1].axis('equal')
         ax2[1].set_title("Digit tips position")
         ax2[1].set_ylabel("z-position (mm)")

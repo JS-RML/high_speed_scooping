@@ -517,7 +517,7 @@ class Gripper(object):
         return self.ik_finger_pos((x,y))
 
     def set_left_tip(self, pos):
-        print("Setting left tip:", pos)
+        # print("Setting left tip:", pos)
         try:
             cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'L')
         except:
@@ -526,7 +526,7 @@ class Gripper(object):
         self.set_left_a1_a2(cmd_a1, cmd_a2)
 
     def set_right_tip(self, pos):
-        print("Setting right tip:", pos)
+        # print("Setting right tip:", pos)
         try:
             cmd_a1, cmd_a2 = self.ik_finger_tip(pos, 'R')
         except:
