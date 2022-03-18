@@ -162,7 +162,15 @@ class DataLogger:
                 'L0_cmd': self.ddh.cmd_pos_l0,
                 'L1_cmd': self.ddh.cmd_pos_l1,
                 'R0_cmd': self.ddh.cmd_pos_r0,
-                'R1_cmd': self.ddh.cmd_pos_r1
+                'R1_cmd': self.ddh.cmd_pos_r1,
+                'L0_cur': self.ddh.finger_L.axis0.motor.current_meas_phC, #B / C
+                'L1_cur': self.ddh.finger_L.axis1.motor.current_meas_phC,
+                'R0_cur': self.ddh.finger_R.axis0.motor.current_meas_phC,
+                'R1_cur': self.ddh.finger_R.axis1.motor.current_meas_phC
+                # 'L0_cur': self.ddh.finger_L.axis0.motor.DC_calib_phB, # unknow voltage / current 
+                # 'L1_cur': self.ddh.finger_L.axis1.motor.DC_calib_phB,
+                # 'R0_cur': self.ddh.finger_R.axis0.motor.DC_calib_phB,
+                # 'R1_cur': self.ddh.finger_R.axis1.motor.DC_calib_phB
             }
             self.logged_data_sets[0].append(data)
         
@@ -263,20 +271,33 @@ class DataLogger:
         ax1[0].set_xlim((x_min,x_max))
         ax1[0].grid(True)
 
-        #compute psi angle from link angle
-        psi = []
-        for i in range(len(plot_item['t1'])):
-            psi.append(self.ddh.link_to_phi(plot_item['R0'][i],plot_item['R1'][i],'R')+self.scoop.theta)
-        plot_item['psi'] = psi
-
-        # plot angle of attack
-        ax1[1].plot(plot_item['t1'], plot_item['psi'])
+        # plot motor current
+        ax1[1].plot(plot_item['t1'], plot_item['L0_cur'], label='F0', color='tab:blue')
+        ax1[1].plot(plot_item['t1'], plot_item['L1_cur'], label='F1', color='tab:orange')
+        ax1[1].plot(plot_item['t1'], plot_item['R0_cur'], label='T0', color='tab:green')
+        ax1[1].plot(plot_item['t1'], plot_item['R1_cur'], label='T1', color='tab:red')
         if self.collision_time is not None: ax1[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
-        ax1[1].set_title("Psi (angle of attack)")
-        ax1[1].set_ylabel("Angle (degree)")
+        ax1[1].legend(loc='upper right').get_frame().set_linewidth(1.0)
+        ax1[1].set_title("Motor current")
+        ax1[1].set_ylabel("Current (A)")
         ax1[1].set_xlabel("Time (ms)")
         ax1[1].set_xlim((x_min,x_max))
         ax1[1].grid(True)
+
+        # #compute psi angle from link angle
+        # psi = []
+        # for i in range(len(plot_item['t1'])):
+        #     psi.append(self.ddh.link_to_phi(plot_item['R0'][i],plot_item['R1'][i],'R')+self.scoop.theta)
+        # plot_item['psi'] = psi
+
+        # # plot angle of attack
+        # ax1[1].plot(plot_item['t1'], plot_item['psi'])
+        # if self.collision_time is not None: ax1[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+        # ax1[1].set_title("Psi (angle of attack)")
+        # ax1[1].set_ylabel("Angle (degree)")
+        # ax1[1].set_xlabel("Time (ms)")
+        # ax1[1].set_xlim((x_min,x_max))
+        # ax1[1].grid(True)
 
         # plot stiffness
         ax2[0].plot(plot_item['t3'], plot_item['L_stiff'], label='F_Kp')
