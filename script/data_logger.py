@@ -6,11 +6,12 @@ import os
 import time
 import json
 import threading
+import numpy as np
+from numpy import deg2rad, rad2deg
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from scipy.interpolate import interp1d
-import numpy as np
-from numpy import deg2rad, rad2deg
+from scipy.signal import butter, lfilter
 
 
 
@@ -137,6 +138,14 @@ def highResPoints(x,y,factor=10):
     return xmod,ymod
 
 
+def butter_lowpass_filter(data, cutoff, fs, order=2):
+    '''
+    Butterworth Lowpass filter
+    '''
+    b, a = butter(order, cutoff, fs=fs, btype='low', analog=False)
+    y = lfilter(b, a, data)
+    return y
+
 class DataLogger:
 
     def __init__(self, robot, gripper, scooping_primitives):
@@ -254,6 +263,34 @@ class DataLogger:
         x_min = max_t * -x_boundary
         x_max = max_t * (1 + x_boundary)
 
+        if self.collision_time is not None:
+            # find closest timestamp index to collision time
+            t_min_diff = np.inf
+            col_idx = 0
+            for t_idx in range(len(plot_item['t1'])):
+                t_diff = np.absolute(plot_item['t1'][t_idx] - self.collision_time)
+                if t_diff < t_min_diff:
+                    t_min_diff = t_diff
+                    col_idx = t_idx
+            # print(plot_item['t1'][col_idx], self.collision_time)
+
+            # find motor angle settle timestamp (End of contact interaction)
+            joint_angle = [plot_item['L0'], plot_item['L1'], plot_item['R0'], plot_item['R1']]
+            interact_idx = col_idx + 5 # start of interaction from collision + some offset
+            max_settle_idx = 0
+            settle_threshold = 0.2
+            offset = 10
+            for q in joint_angle:
+                settle_idx = 0
+                for i in range(interact_idx, len(q)-offset):
+                    if np.absolute(q[i] - q[i+offset]) < settle_threshold:
+                        settle_idx = i + offset
+                        break
+                if settle_idx > max_settle_idx:
+                    max_settle_idx = settle_idx
+            settle_idx = max_settle_idx
+
+
         # plot motor angle
         ax1[0].plot(plot_item['t1'], plot_item['L0'], label='F0', color='tab:blue')
         ax1[0].plot(plot_item['t1'], plot_item['L1'], label='F1', color='tab:orange')
@@ -263,7 +300,9 @@ class DataLogger:
         ax1[0].plot(plot_item['t1'], plot_item['L1_cmd'], color='tab:orange', linestyle='--')
         ax1[0].plot(plot_item['t1'], plot_item['R0_cmd'], color='tab:green', linestyle='--')
         ax1[0].plot(plot_item['t1'], plot_item['R1_cmd'], color='tab:red', linestyle='--')
-        if self.collision_time is not None: ax1[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5', linestyle='--')
+        if self.collision_time is not None: 
+            ax1[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5', linestyle='--')
+            ax1[0].axvline(x=plot_item['t1'][settle_idx], color='darkgray', linewidth='1.5', linestyle='--')
         ax1[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax1[0].set_title("Motor joint angles")
         ax1[0].set_ylabel("Angle (degree)")
@@ -271,46 +310,7 @@ class DataLogger:
         ax1[0].set_xlim((x_min,x_max))
         ax1[0].grid(True)
 
-        # plot motor current
-        ax1[1].plot(plot_item['t1'], plot_item['L0_cur'], label='F0', color='tab:blue')
-        ax1[1].plot(plot_item['t1'], plot_item['L1_cur'], label='F1', color='tab:orange')
-        ax1[1].plot(plot_item['t1'], plot_item['R0_cur'], label='T0', color='tab:green')
-        ax1[1].plot(plot_item['t1'], plot_item['R1_cur'], label='T1', color='tab:red')
-        if self.collision_time is not None: ax1[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
-        ax1[1].legend(loc='upper right').get_frame().set_linewidth(1.0)
-        ax1[1].set_title("Motor current")
-        ax1[1].set_ylabel("Current (A)")
-        ax1[1].set_xlabel("Time (ms)")
-        ax1[1].set_xlim((x_min,x_max))
-        ax1[1].grid(True)
-
-        # #compute psi angle from link angle
-        # psi = []
-        # for i in range(len(plot_item['t1'])):
-        #     psi.append(self.ddh.link_to_phi(plot_item['R0'][i],plot_item['R1'][i],'R')+self.scoop.theta)
-        # plot_item['psi'] = psi
-
-        # # plot angle of attack
-        # ax1[1].plot(plot_item['t1'], plot_item['psi'])
-        # if self.collision_time is not None: ax1[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
-        # ax1[1].set_title("Psi (angle of attack)")
-        # ax1[1].set_ylabel("Angle (degree)")
-        # ax1[1].set_xlabel("Time (ms)")
-        # ax1[1].set_xlim((x_min,x_max))
-        # ax1[1].grid(True)
-
-        # plot stiffness
-        ax2[0].plot(plot_item['t3'], plot_item['L_stiff'], label='F_Kp')
-        ax2[0].plot(plot_item['t3'], plot_item['R_stiff'], label='T_Kp')
-        if self.collision_time is not None: ax2[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
-        ax2[0].legend(loc='lower right').get_frame().set_linewidth(1.0)
-        ax2[0].set_title("Digit stiffness")
-        ax2[0].set_ylabel("P-Gain ((turn/s) / turn)")
-        ax2[0].set_xlabel("Time (ms)")
-        ax2[0].set_xlim((x_min,x_max))
-        ax2[0].grid(True)
-
-        # plot fingertips trajectory
+         # plot fingertips trajectory
         L_tip_x = []
         L_tip_y = []
         R_tip_x = []
@@ -342,22 +342,87 @@ class DataLogger:
         lx,ly = highResPoints(L_tip_x,L_tip_y,5)
         ln = len(lx)
         for i in range(ln-1):
-            ax2[1].plot(lx[i:i+2],ly[i:i+2], color='tab:blue', alpha = float(i)/(ln-1)) 
+            ax1[1].plot(lx[i:i+2],ly[i:i+2], color='tab:blue', alpha = float(i)/(ln-1)) 
         
         rx,ry = highResPoints(R_tip_x,R_tip_y,5)
         rn = len(rx)
         for j in range(rn-1):
-            ax2[1].plot(rx[j:j+2],ry[j:j+2], color='tab:red', alpha = float(j)/(rn-1)) 
+            ax1[1].plot(rx[j:j+2],ry[j:j+2], color='tab:red', alpha = float(j)/(rn-1)) 
         colors = ['tab:blue', 'tab:red']
         lines = [Line2D([0], [0], color=c) for c in colors]
         labels = ['Fingertip', 'Thumbtip']
-        ax2[1].legend(lines, labels, loc='upper right').get_frame().set_linewidth(1.0)
-        ax2[1].set_xticks(range(-300,300,20))
-        ax2[1].set_yticks(range(-300,300,20))
-        ax2[1].axis('equal')
-        ax2[1].set_title("Digit tips position")
-        ax2[1].set_ylabel("z-position (mm)")
-        ax2[1].set_xlabel("x-position (mm)")
+        ax1[1].legend(lines, labels, loc='upper right').get_frame().set_linewidth(1.0)
+        ax1[1].set_xticks(range(-300,300,20))
+        ax1[1].set_yticks(range(-300,300,20))
+        ax1[1].axis('equal')
+        ax1[1].set_title("Digit tips position")
+        ax1[1].set_ylabel("z-position (mm)")
+        ax1[1].set_xlabel("x-position (mm)")
+
+        # #compute psi angle from link angle
+        # psi = []
+        # for i in range(len(plot_item['t1'])):
+        #     psi.append(self.ddh.link_to_phi(plot_item['R0'][i],plot_item['R1'][i],'R')+self.scoop.theta)
+        # plot_item['psi'] = psi
+
+        # # plot angle of attack
+        # ax1[1].plot(plot_item['t1'], plot_item['psi'])
+        # if self.collision_time is not None: ax1[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+        # ax1[1].set_title("Psi (angle of attack)")
+        # ax1[1].set_ylabel("Angle (degree)")
+        # ax1[1].set_xlabel("Time (ms)")
+        # ax1[1].set_xlim((x_min,x_max))
+        # ax1[1].grid(True)
+
+        # plot raw current reading
+        ax2[0].plot(plot_item['t1'], plot_item['L0_cur'], label='F0', color='tab:blue')
+        ax2[0].plot(plot_item['t1'], plot_item['L1_cur'], label='F1', color='tab:orange')
+        ax2[0].plot(plot_item['t1'], plot_item['R0_cur'], label='T0', color='tab:green')
+        ax2[0].plot(plot_item['t1'], plot_item['R1_cur'], label='T1', color='tab:red')
+        if self.collision_time is not None: 
+            ax2[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+            ax2[0].axvline(x=plot_item['t1'][settle_idx], color='darkgray', linewidth='1.5', linestyle='--')
+        ax2[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
+        ax2[0].set_title("Raw motor current")
+        ax2[0].set_ylabel("Current (A)")
+        ax2[0].set_xlabel("Time (ms)")
+        ax2[0].set_xlim((x_min,x_max))
+        ax2[0].grid(True)
+
+        # apply lowpass filter to raw current reading
+        fs = np.mean(1./(np.diff(plot_item['t1'])/1000)) # average sampling rate of timestamp
+        print('Average sampling rate: {:.2f} Hz'.format(fs))
+        cutoff_freq = 8 # cutoff frequency of the filter
+        l0_cur_lp = butter_lowpass_filter(plot_item['L0_cur'], cutoff_freq, fs, order = 2)
+        l1_cur_lp = butter_lowpass_filter(plot_item['L1_cur'], cutoff_freq, fs, order = 2)
+        r0_cur_lp = butter_lowpass_filter(plot_item['R0_cur'], cutoff_freq, fs, order = 2)
+        r1_cur_lp = butter_lowpass_filter(plot_item['R1_cur'], cutoff_freq, fs, order = 2)
+        # plot filtered motor current
+        ax2[1].plot(plot_item['t1'], l0_cur_lp, label='F0', color='tab:blue')
+        ax2[1].plot(plot_item['t1'], l1_cur_lp, label='F1', color='tab:orange')
+        ax2[1].plot(plot_item['t1'], r0_cur_lp, label='T0', color='tab:green')
+        ax2[1].plot(plot_item['t1'], r1_cur_lp, label='T1', color='tab:red')
+        if self.collision_time is not None: 
+            ax2[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+            ax2[1].axvline(x=plot_item['t1'][settle_idx], color='darkgray', linewidth='1.5', linestyle='--')
+        ax2[1].legend(loc='upper right').get_frame().set_linewidth(1.0)
+        ax2[1].set_title("Filtered motor current")
+        ax2[1].set_ylabel("Current (A)")
+        ax2[1].set_xlabel("Time (ms)")
+        ax2[1].set_xlim((x_min,x_max))
+        ax2[1].grid(True)
+
+        # # plot stiffness
+        # ax2[0].plot(plot_item['t3'], plot_item['L_stiff'], label='F_Kp')
+        # ax2[0].plot(plot_item['t3'], plot_item['R_stiff'], label='T_Kp')
+        # if self.collision_time is not None: ax2[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+        # ax2[0].legend(loc='lower right').get_frame().set_linewidth(1.0)
+        # ax2[0].set_title("Digit stiffness")
+        # ax2[0].set_ylabel("P-Gain ((turn/s) / turn)")
+        # ax2[0].set_xlabel("Time (ms)")
+        # ax2[0].set_xlim((x_min,x_max))
+        # ax2[0].grid(True)
+
 
         # plot ur z
         ur_z_interp = interp1d(plot_item['t2'],plot_item['UR_Z'],kind="cubic")
@@ -391,8 +456,9 @@ class DataLogger:
 
             # save subplots as figs
             save_subplot(save_dir + '/joint.png', fig1, ax1[0], 1.23, 1.23)
-            save_subplot(save_dir + '/psi.png', fig1, ax1[1], 1.23, 1.23)
-            save_subplot(save_dir + '/gain.png', fig2, ax2[0], 1.23, 1.23)
+            save_subplot(save_dir + '/tip.png', fig1, ax1[1], 1.23, 1.23)
+            save_subplot(save_dir + '/raw_current.png', fig2, ax2[0], 1.23, 1.23)
+            save_subplot(save_dir + '/filtered_current.png', fig2, ax2[1], 1.23, 1.23)
             save_subplot(save_dir + '/z_pos.png', fig3, ax3[0], 1.23, 1.23)
             save_subplot(save_dir + '/z_spd.png', fig3, ax3[1], 1.23, 1.23)
 
