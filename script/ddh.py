@@ -98,7 +98,6 @@ class Gripper(object):
         self.geometry_l3 = config['geometry']['l3']
         self.geometry_gamma = config['geometry']['gamma']
         self.a2_sing = rad2deg(np.arcsin(self.geometry_l2/self.geometry_l1)) # a2 when distal links in singularity
-        print(self.a2_sing)
         # virtual link formed by l2 and l3
         self._l3 = np.sqrt(self.geometry_l2**2 + self.geometry_l3**2 - 2 * self.geometry_l2 * self.geometry_l3 * np.cos(deg2rad(self.geometry_gamma)))
         # angle between l2 and _l3
