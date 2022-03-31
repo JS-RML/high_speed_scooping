@@ -64,7 +64,7 @@ class HighSpeedScooping:
             object_2D_pose(tuple): (x_obj, y_obj, q_obj) object pose in x-y plane of ur10 base frame 
                 x_obj(m): x coordinate of object's center
                 y_obj(m): y coordinate of object's center
-                q_obj(degree): angle of object's longer center line relative to x axis of ur10 base frame
+                q_obj(degree): angle of thumb's penetration axis relative to x axis of ur10 base frame
         Returns:
         
         '''
@@ -96,7 +96,6 @@ class HighSpeedScooping:
         self.ur.set_tcp(np.append(P_t_F, [0,0,0]))
         # set gripper initial pose
         init_pose = m3d.Transform()
-        # work in -ve x and +ve y region only
         init_pose.pos.x = x_obj + (self.fg_dist - self.obj_l/2) * cos(radians(q_obj)) / 1000
         init_pose.pos.y = y_obj + (self.fg_dist - self.obj_l/2) * sin(radians(q_obj)) / 1000
         init_pose.pos.z = self.grip_h
@@ -368,11 +367,3 @@ class HighSpeedScooping:
             print("Error occurred:")
             print(err)
 
-    def two_states_scoop(self):
-        #TODO: First set tip to gripper's center line horizontally, then close finger
-        return
-
-    def reactive_scoop(self):
-        #TODO: estimate gripper pose relative to surface after contacts
-        # execute scooping motion according to relative gripper pose
-        return
