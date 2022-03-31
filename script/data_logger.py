@@ -57,38 +57,33 @@ def get_cmd_spd(plot_item, scoop):
 def truncate_pos_data(x,y,displacement_threshold):
     '''
     Truncate redundent position data from the start and end if the distance of neighbour points are less than the threshold
+    Return: the start and end index to truncate
     '''
     # truncate from the start
     n = len(x)
-    trunc_idx = 0
+    trunc_start_idx = 0
     for i in range(n-1):
         a = np.array((x[i] ,y[i]))
         b = np.array((x[i+1], y[i+1]))
         dist_change = np.linalg.norm(a-b)
         if dist_change > displacement_threshold:
-            trunc_idx = i
+            trunc_start_idx = i
             break
-    x_trunc = x[trunc_idx:]
-    y_trunc = y[trunc_idx:]
 
     # truncate from the end
-    n = len(x_trunc)
-    trunc_idx = 0
+    trunc_end_idx = 0
     for i in range(n-1, 0, -1):
-        a = np.array((x_trunc[i] ,y_trunc[i]))
-        b = np.array((x_trunc[i-1], y_trunc[i-1]))
+        a = np.array((x[i] ,y[i]))
+        b = np.array((x[i-1], y[i-1]))
         dist_change = np.linalg.norm(a-b)
         if dist_change > displacement_threshold:
-            trunc_idx = i
+            trunc_end_idx = i
             break
-    x_trunc = x_trunc[:trunc_idx]
-    y_trunc = y_trunc[:trunc_idx]
 
-    # return oringinal data if all the point below threshold
-    if len(x_trunc) == 0:
-        return x, y
+    # return first few indexs if all the points are overlapping
+    if trunc_end_idx <= trunc_start_idx: return 0, 5
 
-    return x_trunc, y_trunc
+    return trunc_start_idx, trunc_end_idx
 
 
 def highResPoints(x,y,factor=10):
@@ -301,7 +296,7 @@ class DataLogger:
         ax1[0].plot(plot_item['t1'], plot_item['R0_cmd'], color='tab:green', linestyle='--')
         ax1[0].plot(plot_item['t1'], plot_item['R1_cmd'], color='tab:red', linestyle='--')
         if self.collision_time is not None: 
-            ax1[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5', linestyle='--')
+            ax1[0].axvline(x=plot_item['t1'][col_idx], color='darkgray', linewidth='1.5', linestyle='--')
             ax1[0].axvline(x=plot_item['t1'][settle_idx], color='darkgray', linewidth='1.5', linestyle='--')
         ax1[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax1[0].set_title("Motor joint angles")
@@ -336,22 +331,30 @@ class DataLogger:
             R_tip_x.append(rx_world)
             R_tip_y.append(ry_world)
 
-        L_tip_x,L_tip_y = truncate_pos_data(L_tip_x,L_tip_y, 0.3)
-        R_tip_x,R_tip_y = truncate_pos_data(R_tip_x,R_tip_y, 0.3)
+        # eliminate overlapping points
+        L_s_idx, L_e_idx = truncate_pos_data(L_tip_x,L_tip_y, 0.3)
+        R_s_idx, R_e_idx = truncate_pos_data(R_tip_x,R_tip_y, 0.3)
+        L_tip_x = L_tip_x[L_s_idx:L_e_idx]
+        L_tip_y = L_tip_y[L_s_idx:L_e_idx]
+        R_tip_x = R_tip_x[R_s_idx:R_e_idx]
+        R_tip_y = R_tip_y[R_s_idx:R_e_idx]
 
+        # plot left tip
         lx,ly = highResPoints(L_tip_x,L_tip_y,5)
         ln = len(lx)
         for i in range(ln-1):
             ax1[1].plot(lx[i:i+2],ly[i:i+2], color='tab:blue', alpha = float(i)/(ln-1)) 
-        
+        # plot right tip
         rx,ry = highResPoints(R_tip_x,R_tip_y,5)
         rn = len(rx)
         for j in range(rn-1):
             ax1[1].plot(rx[j:j+2],ry[j:j+2], color='tab:red', alpha = float(j)/(rn-1)) 
+        # add legend
         colors = ['tab:blue', 'tab:red']
         lines = [Line2D([0], [0], color=c) for c in colors]
         labels = ['Fingertip', 'Thumbtip']
         ax1[1].legend(lines, labels, loc='upper right').get_frame().set_linewidth(1.0)
+        # plot settings
         ax1[1].set_xticks(range(-300,300,20))
         ax1[1].set_yticks(range(-300,300,20))
         ax1[1].axis('equal')
@@ -380,7 +383,7 @@ class DataLogger:
         ax2[0].plot(plot_item['t1'], plot_item['R0_cur'], label='T0', color='tab:green')
         ax2[0].plot(plot_item['t1'], plot_item['R1_cur'], label='T1', color='tab:red')
         if self.collision_time is not None: 
-            ax2[0].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+            ax2[0].axvline(x=plot_item['t1'][col_idx], color='darkgray', linewidth='1.5', linestyle='--')
             ax2[0].axvline(x=plot_item['t1'][settle_idx], color='darkgray', linewidth='1.5', linestyle='--')
         ax2[0].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax2[0].set_title("Raw motor current")
@@ -403,7 +406,7 @@ class DataLogger:
         ax2[1].plot(plot_item['t1'], r0_cur_lp, label='T0', color='tab:green')
         ax2[1].plot(plot_item['t1'], r1_cur_lp, label='T1', color='tab:red')
         if self.collision_time is not None: 
-            ax2[1].axvline(x=plot_item['t_col'], color='darkgray', linewidth='1.5' ,linestyle='--')
+            ax2[1].axvline(x=plot_item['t1'][col_idx], color='darkgray', linewidth='1.5', linestyle='--')
             ax2[1].axvline(x=plot_item['t1'][settle_idx], color='darkgray', linewidth='1.5', linestyle='--')
         ax2[1].legend(loc='upper right').get_frame().set_linewidth(1.0)
         ax2[1].set_title("Filtered motor current")
