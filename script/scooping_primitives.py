@@ -54,8 +54,8 @@ class HighSpeedScooping:
         self.tb_gsp_stiff = config['thumb_grasp_stiffness']
         self.grasp_pos = np.array(config['digit_grasp_position'])
 
-        self.table2bot = 0.02 - 0.005 # robot offset from table (m)
-        self.wall2bot = 1.07 # (m)
+        self.table2bot = 0.02 - 0.005 # robot base offset from table (m)
+        self.wall2bot = 1.07 # distance from robot base to wall (m)
 
 
     def initialize_pose(self, object_2D_pose):
