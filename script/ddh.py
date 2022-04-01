@@ -289,12 +289,12 @@ class Gripper(object):
         # return self.geometry_l1*np.cos(deg2rad(self.right_a2)) + distal_r
         return self.a2_to_r(self.right_a2)
 
-    # position of distal joint (base joint of finger) in motor frame
     # forward kinematics function: r, a2 angle to distal joint coordinate
     def r_a1_to_rx_ry(self, r, a1):
         # rx, ry
         return r * np.cos(deg2rad(a1)), r * np.sin(deg2rad(a1))
 
+    # position of distal joint (base joint of finger) in motor frame
     @property
     def left_finger_pos(self): 
         # x = self.left_finger_dist * np.cos(deg2rad(self.left_a1))
@@ -338,7 +338,6 @@ class Gripper(object):
     # forward kinematics function: a1, a3 angles to finger phi angle
     def a1a3_to_L_phi(self, a1, a3):
         return a1 + a3 + self.geometry_beta - 180
-            
     def a1a3_to_R_phi(self, a1, a3):
         return a1 - (a3 + self.geometry_beta - 180)
 
