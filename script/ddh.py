@@ -363,10 +363,13 @@ class Gripper(object):
         elif finger == 'R':
             return self.get_R_tip(a1,a3,rxry)
 
-    # forward kinematics function: a1, a3 angles to left tip coordinate
-    def get_L_tip(self, a1, a3, rxry):
+    # forward kinematics function: a1, a3 angles and joint coordinate to tip coordinate
+    def a1a3rxy_to_tip(self, a1, a3, rxry, finger):
         # angle of l3 relative to x axis
-        q_tip = a1 + a3 + self.geometry_gamma - 180
+        if finger == 'L':
+            q_tip = a1 + a3 + self.geometry_gamma - 180
+        elif finger == 'R':
+            q_tip = a1 - (a3 + self.geometry_gamma - 180)
         x = rxry[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
         y = rxry[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
         return x, y
@@ -378,15 +381,7 @@ class Gripper(object):
         # x = self.left_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
         # y = self.left_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
         # return x, y
-        return self.get_L_tip(self.left_a1, self.left_a3, self.left_finger_pos)
-
-    # forward kinematics function: a1, a3 angles to right tip coordinate
-    def get_R_tip(self, a1, a3, rxry):
-        # angle of l3 relative to x axis
-        q_tip = a1 - (a3 + self.geometry_gamma - 180)
-        x = rxry[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
-        y = rxry[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
-        return x, y
+        return self.a1a3rxy_to_tip(self.left_a1, self.left_a3, self.left_finger_pos, 'L')
 
     @property
     def right_tip_pos(self):
@@ -395,7 +390,7 @@ class Gripper(object):
         # x = self.right_finger_pos[0] + self.geometry_l3 * np.cos(deg2rad(q_tip))
         # y = self.right_finger_pos[1] + self.geometry_l3 * np.sin(deg2rad(q_tip))
         # return x, y
-        return self.get_R_tip(self.right_a1, self.right_a3, self.right_finger_pos)
+        return self.a1a3rxy_to_tip(self.right_a1, self.right_a3, self.right_finger_pos, 'R')
 
     # first control the position of individual links
 
