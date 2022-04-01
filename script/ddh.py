@@ -238,6 +238,7 @@ class Gripper(object):
     def link_pos_l1(self):
         return self.motor_pos_l1 + self.L1_link
 
+    # forward kinematics function: link angles to a1, a2 angle 
     def link_to_a1(self, l0, l1):
         return (l0+l1)/2
 
@@ -265,6 +266,7 @@ class Gripper(object):
         # return (self.link_pos_l0-self.link_pos_l1)/2
 
     # r: distance from motor joint to distal joint (base joint of finger)
+    # forward kinematics function: a2 angle to r distance
     def a2_to_r(self, a2):
         if a2 > self.a2_sing:
             return  self.geometry_l1*np.cos(deg2rad(a2))
@@ -288,6 +290,7 @@ class Gripper(object):
         return self.a2_to_r(self.right_a2)
 
     # position of distal joint (base joint of finger) in motor frame
+    # forward kinematics function: r, a2 angle to distal joint coordinate
     def r_a1_to_rx_ry(self, r, a1):
         # rx, ry
         return r * np.cos(deg2rad(a1)), r * np.sin(deg2rad(a1))
@@ -307,6 +310,7 @@ class Gripper(object):
         return self.r_a1_to_rx_ry(self.right_finger_dist, self.right_a1)
 
     # a3: angle between distal link (L2) and vector from origin to distal joint (r)
+    # forward kinematics function: r distance to a3 angle
     def r_to_a3(self, r):
         return rad2deg(np.arccos((self.geometry_l1**2 - self.geometry_l2**2 - r**2)/(-2 * self.geometry_l2 * r)))
 
@@ -321,6 +325,7 @@ class Gripper(object):
         return self.r_to_a3(self.right_finger_dist)
 
     # phi: angle of finger surface relative to x axis
+    # forward kinematics function: link angles to phi angle
     def link_to_phi(self, l0, l1, finger):
         a1 = self.link_to_a1(l0,l1)
         r = self.a2_to_r(self.link_to_a2(l0,l1))
@@ -330,6 +335,7 @@ class Gripper(object):
         elif finger == 'R':
             return self.a1a3_to_R_phi(a1,a3)
 
+    # forward kinematics function: a1, a3 angles to finger phi angle
     def a1a3_to_L_phi(self, a1, a3):
         return a1 + a3 + self.geometry_beta - 180
             
@@ -347,6 +353,7 @@ class Gripper(object):
         return self.a1a3_to_R_phi(self.right_a1, self.right_a3)
 
     # position of fingertip in motor frame
+    # forward kinematics function: link angles to tip coordinate
     def link_to_tip(self, l0, l1, finger):
         a1 = self.link_to_a1(l0,l1)
         r = self.a2_to_r(self.link_to_a2(l0,l1))
@@ -357,6 +364,7 @@ class Gripper(object):
         elif finger == 'R':
             return self.get_R_tip(a1,a3,rxry)
 
+    # forward kinematics function: a1, a3 angles to left tip coordinate
     def get_L_tip(self, a1, a3, rxry):
         # angle of l3 relative to x axis
         q_tip = a1 + a3 + self.geometry_gamma - 180
@@ -373,6 +381,7 @@ class Gripper(object):
         # return x, y
         return self.get_L_tip(self.left_a1, self.left_a3, self.left_finger_pos)
 
+    # forward kinematics function: a1, a3 angles to right tip coordinate
     def get_R_tip(self, a1, a3, rxry):
         # angle of l3 relative to x axis
         q_tip = a1 - (a3 + self.geometry_gamma - 180)
