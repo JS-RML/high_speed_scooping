@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from scipy.interpolate import interp1d
 from scipy.signal import butter, lfilter
+import re
 
 
 
@@ -171,6 +172,10 @@ def butter_lowpass_filter(data, cutoff, fs, order=2):
     y = lfilter(b, a, data)
     return y
 
+def extract_json_file_name_number(f):
+    s = re.findall("(\d+).json",f)
+    return (int(s[0]) if s else -1,f)
+
 class DataLogger:
 
     def __init__(self, robot, gripper, scooping_primitives):
@@ -183,6 +188,7 @@ class DataLogger:
         self.logging_threads = [None for i in self.log_rates]
         self.logged_data_sets = [[] for i in self.log_rates]
         self.collision_time = None
+        self.packed_data = None
 
     def logging_job1(self):
         while self.keep_logging:
@@ -243,6 +249,8 @@ class DataLogger:
             self.log_stop()
     
     def log_start(self):
+        self.collision_time = None
+        self.packed_data = None
         for s in self.logged_data_sets:
             s.clear()
         self.keep_logging = True
@@ -258,6 +266,7 @@ class DataLogger:
             t.join()
         self.logging_threads = [None for i in self.log_rates]
         print('Stop logging')
+        self.packed_data = self.pack_data()
 
     def pack_data(self):
         '''
@@ -283,8 +292,27 @@ class DataLogger:
 
         return packed_data
 
+    def save_training_data(self, dataset_name=''):
+        label = input("Enter grasping result (1:Success, 0: failed): ")
+        dataset_dir = 'LSTM_grasping_classifier/dataset/' + dataset_name + label
+        if not os.path.exists(dataset_dir):
+            os.makedirs(dataset_dir)
+        f = os.listdir(dataset_dir) 
+        if not f: 
+            # if no file found in target directory
+            save_idx = 1
+        else:
+            # find max index in directary and plus 1
+            save_idx = int(max(f,key=extract_json_file_name_number).replace('.json','')) + 1 
+        save_dir = dataset_dir + '/' + str(save_idx) + '.json'
+        with open(save_dir, mode='w') as save:
+            print("Saving training data in {}".format(save_dir))
+            save_item = ['t_col', 't1', 'L0', 'L1', 'R0', 'R1', 'L0_cmd', 'L1_cmd', 'R0_cmd', 'R1_cmd', 'L0_cur', 'L1_cur', 'R0_cur', 'R1_cur']
+            save_data = {item:self.packed_data[item] for item in self.packed_data if item in save_item}
+            json.dump(save_data, save)
+
     def plot_data(self, save_plot = False):
-        plot_item = self.pack_data() # get packed data for plotting
+        plot_item = self.packed_data # get packed data for plotting
         
         # creat subsplots
         fig1, ax1 = plt.subplots(1,2)
@@ -319,7 +347,7 @@ class DataLogger:
         ax1[0].set_xlim((x_min,x_max))
         ax1[0].grid(True)
 
-         # plot fingertips trajectory
+        # plot fingertips trajectory
         L_tip_x = []
         L_tip_y = []
         R_tip_x = []
@@ -503,4 +531,3 @@ class DataLogger:
                 json.dump(plot_item, f)
 
         plt.show()
-        self.collision_time = None
