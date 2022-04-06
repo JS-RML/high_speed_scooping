@@ -54,6 +54,36 @@ def get_cmd_spd(plot_item, scoop):
     cmd_t.append(plot_item['t1'][-1])
     return cmd_spd, cmd_t
 
+def get_joint_angle_boundary(packed_data, srt_offset = 0, end_offset = 0):
+    '''
+    Find the boundary indexes of joint angle data starting at collision time and ending at the start of stationary readings
+    Return: start_idx + start_offset, end_idx + end_offest
+    '''
+    # find closest timestamp index to collision time
+    t_min_diff = np.inf
+    srt_idx = 0
+    for t_idx in range(len(packed_data['t1'])):
+        t_diff = np.absolute(packed_data['t1'][t_idx] - packed_data['t_col'][0])
+        if t_diff < t_min_diff:
+            t_min_diff = t_diff
+            srt_idx = t_idx
+    # print(packed_data['t1'][srt_idx], packed_data['t_col'])
+
+    # find motor angle settle timestamp (End of contact interaction) scanning from the end
+    joint_angle = [packed_data['L0'], packed_data['L1'], packed_data['R0'], packed_data['R1']]
+    max_settle_idx = 0
+    settle_threshold = 0.5
+    for q in joint_angle:
+        end_idx = 0
+        for i in range(len(q)-1, srt_idx, -1):
+            if np.absolute(q[i] - q[i-1]) > settle_threshold:
+                end_idx = i
+                break
+        if end_idx > max_settle_idx:
+            max_settle_idx = end_idx
+    end_idx = max_settle_idx
+    return srt_idx + srt_offset, end_idx + end_offset
+
 def truncate_pos_data(x,y,displacement_threshold):
     '''
     Truncate redundent position data from the start and end if the distance of neighbour points are less than the threshold
@@ -229,24 +259,32 @@ class DataLogger:
         self.logging_threads = [None for i in self.log_rates]
         print('Stop logging')
 
-    def plot_data(self, save_plot = False):
-        plot_item = {}
+    def pack_data(self):
+        '''
+        convert multiple logged_data_set(list of dict) to one packed_data(dict of list)
+        '''
+        packed_data = {}
         for s in self.logged_data_sets:
             for name in s[0]:
-                plot_item[name] = [] # create empty list for each item
+                packed_data[name] = [] # create empty list for each item
 
         # convert logged_data_set(list of dict) to plot_item(dict of list)
         for s in self.logged_data_sets:
             for data in s:
                 for name in data:
                     if name == 't1' or name == 't2' or name == 't3': 
-                        plot_item[name].append(data[name]-s[0][name]) # relative time from start logging
-                    else: plot_item[name].append(data[name])
+                        packed_data[name].append(data[name]-s[0][name]) # relative time from start logging
+                    else: packed_data[name].append(data[name])
         
         if self.collision_time is not None:
             self.collision_time = self.collision_time - self.logged_data_sets[2][0]['t3']
-            plot_item['t_col'] = [self.collision_time]
+            packed_data['t_col'] = [self.collision_time]
             print("Collision time: {} ms".format(self.collision_time))
+
+        return packed_data
+
+    def plot_data(self, save_plot = False):
+        plot_item = self.pack_data() # get packed data for plotting
         
         # creat subsplots
         fig1, ax1 = plt.subplots(1,2)
@@ -259,32 +297,8 @@ class DataLogger:
         x_max = max_t * (1 + x_boundary)
 
         if self.collision_time is not None:
-            # find closest timestamp index to collision time
-            t_min_diff = np.inf
-            col_idx = 0
-            for t_idx in range(len(plot_item['t1'])):
-                t_diff = np.absolute(plot_item['t1'][t_idx] - self.collision_time)
-                if t_diff < t_min_diff:
-                    t_min_diff = t_diff
-                    col_idx = t_idx
-            # print(plot_item['t1'][col_idx], self.collision_time)
-
-            # find motor angle settle timestamp (End of contact interaction)
-            joint_angle = [plot_item['L0'], plot_item['L1'], plot_item['R0'], plot_item['R1']]
-            interact_idx = col_idx + 5 # start of interaction from collision + some offset
-            max_settle_idx = 0
-            settle_threshold = 0.2
-            offset = 10
-            for q in joint_angle:
-                settle_idx = 0
-                for i in range(interact_idx, len(q)-offset):
-                    if np.absolute(q[i] - q[i+offset]) < settle_threshold:
-                        settle_idx = i + offset
-                        break
-                if settle_idx > max_settle_idx:
-                    max_settle_idx = settle_idx
-            settle_idx = max_settle_idx
-
+            # get boundary indexes of contact interaction in joint angles data 
+            col_idx, settle_idx = get_joint_angle_boundary(plot_item)
 
         # plot motor angle
         ax1[0].plot(plot_item['t1'], plot_item['L0'], label='F0', color='tab:blue')

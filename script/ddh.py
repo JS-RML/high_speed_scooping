@@ -358,10 +358,7 @@ class Gripper(object):
         r = self.a2_to_r(self.link_to_a2(l0,l1))
         a3 = self.r_to_a3(r)
         rxry = self.r_a1_to_rx_ry(r, a1)
-        if finger == 'L':
-            return self.get_L_tip(a1, a3, rxry)
-        elif finger == 'R':
-            return self.get_R_tip(a1,a3,rxry)
+        return self.a1a3rxy_to_tip(a1, a3, rxry, finger)
 
     # forward kinematics function: a1, a3 angles and joint coordinate to tip coordinate
     def a1a3rxy_to_tip(self, a1, a3, rxry, finger):
