@@ -84,7 +84,7 @@ class MotorDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return torch.from_numpy(np.array(self.data[idx])).float().to(DEVICE) , self.label[idx]
+        return torch.Tensor(self.data[idx]).float().to(DEVICE) , self.label[idx]
 
 def collate_fn(data):
     '''  
@@ -161,18 +161,20 @@ def train():
             print("Epoch {}: best model saved with accuracy: {:.3f}%".format(epoch, acc))
 
 
-def classify(packed_data, trained_model_name):
+def classify(packed_data, model_name):
     '''
     Using the trained model to classify the signal from the packed_data in data_logger.py
     Return: Grasping result, 1: grasped, 0: grasp failed
     '''
     model = LSTMClassifier(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM).to(DEVICE)
-    model.load_state_dict(torch.load(model_name + '.pth'))
+    parent_dir = 'LSTM_grasping_classifier/'
+    model.load_state_dict(torch.load(parent_dir + MODEL_DIR + model_name + '.pth'))
     model.eval()
 
-    sequence = get_sequence(packed_data)
+    sequence = torch.Tensor(get_sequence(packed_data)).float().to(DEVICE)
     input = torch.unsqueeze(sequence, 0)
     output = model(input)
+    del model
     return (output>0.5).int().item()
 
 if __name__ == "__main__":
