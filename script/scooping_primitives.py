@@ -139,6 +139,9 @@ class HighSpeedScooping:
                 if a2_cur - a2_init > 0.3:
                     self.collided = True
                     spd_collide = self.ur.get_tcp_speed(wait=False)[2]
+                    if spd_collide == 0.0:
+                        print("Warning: get_tcp_speed() return 0.0!")
+                        spd_collide = -self.smack_vel
                     pos_collide = self.ur.getl()[2]
                     print ("Collision detected!")
                     # close fingers with different stiffness
