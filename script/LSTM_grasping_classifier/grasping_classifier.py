@@ -15,6 +15,7 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("PyTorch running on device: {}".format(DEVICE))
 
 # directories
+MODULE_DIR = os.path.dirname(__file__) + '/'
 DATASET_DIR = 'dataset/'
 MODEL_DIR = 'model/'
 
@@ -167,8 +168,7 @@ def classify(packed_data, model_name):
     Return: Grasping result, 1: grasped, 0: grasp failed
     '''
     model = LSTMClassifier(INPUT_DIM, HIDDEN_DIM, OUTPUT_DIM).to(DEVICE)
-    parent_dir = 'LSTM_grasping_classifier/'
-    model.load_state_dict(torch.load(parent_dir + MODEL_DIR + model_name + '.pth'))
+    model.load_state_dict(torch.load(MODULE_DIR + MODEL_DIR + model_name + '.pth'))
     model.eval()
 
     sequence = torch.Tensor(get_sequence(packed_data)).float().to(DEVICE)
