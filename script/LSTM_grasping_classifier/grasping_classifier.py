@@ -25,7 +25,7 @@ DATA_TYPE = ['L0', 'L1', 'R0', 'R1', 'L0_cur', 'L1_cur', 'R0_cur', 'R1_cur'] # m
 
 # model parameters
 INPUT_DIM = len(DATA_TYPE)
-HIDDEN_DIM = 8
+HIDDEN_DIM = INPUT_DIM
 OUTPUT_DIM = 1
 
 # training parameter
