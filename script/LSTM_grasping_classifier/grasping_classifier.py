@@ -110,7 +110,7 @@ def collate_fn(data):
     return padded_seq, torch.from_numpy(np.array(length)), torch.from_numpy(np.array(label)).float().to(DEVICE)
 
 def train():
-    datasets_name = ['domino']
+    datasets_name = ['card'] #domino, card
     model_save_path = MODEL_DIR + '_'.join(datasets_name) + '.pth'
 
     datasets = MotorDataset(datasets_name)
