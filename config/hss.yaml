@@ -13,18 +13,18 @@ finger_prescoop_stiffness: 30 # pos gain of finger before scoop
 thumb_prescoop_stiffness: 60 # pos gain of thumb before scoop
 finger_scoop_stiffness: 50 # pos gain of finger for scooping
 thumb_scoop_stiffness: 80 # pos gain of thumb for scooping
-finger_grasp_stiffness: 150 # pos gain of finger for grasping
-thumb_grasp_stiffness: 150 # pos gain of thumb for grasping
+finger_grasp_stiffness: 60 # pos gain of finger for grasping
+thumb_grasp_stiffness: 100 # pos gain of thumb for grasping
 digit_grasp_position: [155, 45] # digit position of grasping the object in motor frame
 
 # arm's motion parameters
 gripper_height: 0.25 # (meter) initial height of gripper in world frame 
 init_vel: 0.05 # (m/s) velocity of tcp when initializing gripper pose
 init_acc: 0.05 # (m/s^2) acceleration...
-smack_vel: 0.2 # (m/s) velocity of tcp when approaching to the surface
-smack_acc: 0.2 # (m/s^2) acceleration...
+smack_vel: 0.1 # (m/s) velocity of tcp when approaching to the surface
+smack_acc: 0.1 # (m/s^2) acceleration...
 slow_dist: 0.02 # (meter) distance of gripper slowing down after collision
-lift_vel: 0.2 # (m/s) velocity of tcp when lifting the object up from the surface 
+lift_vel: 0.1 # (m/s) velocity of tcp when lifting the object up from the surface 
 lift_dist: 0.2 # (meter) distance of gripper lifted off from the surface
 stop_acc: 5 # (m/s^2) deceleration of stopping the robot's motion
 

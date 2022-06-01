@@ -56,7 +56,7 @@ def set_input_bandwidth(axis, BW):
 
 class Gripper(object):
 
-    def __init__(self, config_name):
+    def __init__(self, config_name, online = True):
         config_file = config_name + ".yaml"
         with open("../config/"+config_file, 'r') as stream:
             try:
@@ -106,11 +106,12 @@ class Gripper(object):
         self.r_min = np.sqrt(self.geometry_l1**2 - self.geometry_l2**2) + config['geometry']['r_min_offset']
         self.r_max = self.geometry_l1 + self.geometry_l2 - config['geometry']['r_max_offset']
 
-        print('connecting to odrive...')
-        self.finger_L = odrive.find_any(serial_number='207E39775453')
-        print('found left finger')
-        self.finger_R = odrive.find_any(serial_number='207C39785453')
-        print('found right fingers')
+        if online == True:
+            print('connecting to odrive...')
+            self.finger_L = odrive.find_any(serial_number='207E39775453')
+            print('found left finger')
+            self.finger_R = odrive.find_any(serial_number='207C39785453')
+            print('found right fingers')
         # arm(self.finger_L.axis0)
         # arm(self.finger_L.axis1)
         # arm(self.finger_R.axis0)

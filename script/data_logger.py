@@ -385,10 +385,12 @@ class DataLogger:
         interp_points = 5
         lx,ly = highResPoints(L_tip_x,L_tip_y,interp_points)
         ln = len(lx)
-        for i in range(ln-1):
-            ax1[1].plot(lx[i:i+2],ly[i:i+2], color='tab:blue', alpha = float(i)/(ln-1)) 
+        # for i in range(ln-1):
+        #     ax1[1].plot(lx[i:i+2],ly[i:i+2], color='tab:blue', alpha = float(i)/(ln-1)) 
         # plot right tip
         rx,ry = highResPoints(R_tip_x,R_tip_y,interp_points)
+        plot_item['rx'] = rx
+        plot_item['ry'] = ry
         rn = len(rx)
         for j in range(rn-1):
             ax1[1].plot(rx[j:j+2],ry[j:j+2], color='tab:red', alpha = float(j)/(rn-1)) 
@@ -398,22 +400,25 @@ class DataLogger:
         thumb_steps = 40 # plot thumb for every steps of data
         plot_num = 10 # number of thumb to plot
         plot_counter = 0
-        for k in range(0, len(rx), thumb_steps):
+        for k in range(0, rn, thumb_steps):
             psi = self.ddh.link_to_phi(plot_item['R0'][int(k/interp_points)],plot_item['R1'][int(k/interp_points)],'R') + theta
             x1 = rx[k]
             x2 = rx[k] + thumb_len*np.cos(deg2rad(psi))
             y1 = ry[k]
             y2 = ry[k] + thumb_len*np.sin(deg2rad(psi))
-            ax1[1].plot([x1,x2], [y1,y2], color='tab:red', linestyle='--', alpha = min(float(k)/(len(rx)-1) + 0.2, 1.0))
+            ax1[1].plot([x1,x2], [y1,y2], color='tab:red', linestyle='--', alpha = min(float(k)/(rn-1) + 0.2, 1.0))
             plot_counter += 1
             if plot_counter >= plot_num:
                 break
         
         # add legend
-        colors = ['tab:blue', 'tab:red', 'tab:red']
-        styles = ['-', '-', '--']
+        # colors = ['tab:blue', 'tab:red', 'tab:red']
+        # styles = ['-', '-', '--']
+        colors = ['tab:red', 'tab:red']
+        styles = ['-', '--']
         lines = [Line2D([0], [0], color=colors[i], linestyle=styles[i]) for i in range(len(colors))]
-        labels = ['Fingertip', 'Thumbtip', 'Thumb surface']
+        # labels = ['Fingertip', 'Thumbtip', 'Thumb surface']
+        labels = ['Contact surface', 'Thumb surface']
         ax1[1].legend(lines, labels, loc='upper right').get_frame().set_linewidth(1.0)
         # plot settings
         ax1[1].set_xticks(range(-300,300,20))

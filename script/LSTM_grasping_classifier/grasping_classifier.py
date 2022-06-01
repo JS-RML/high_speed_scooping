@@ -21,7 +21,13 @@ MODEL_DIR = 'model/'
 
 # data parameters
 SEQ_SRT_OFFSET, SEQ_END_OFFSET = -20, 20 # sequence boundary offset
-DATA_TYPE = ['L0', 'L1', 'R0', 'R1', 'L0_cur', 'L1_cur', 'R0_cur', 'R1_cur'] # motor angles and current
+finger_angles = ['L0', 'L1']
+finger_current = ['L0_cur', 'L1_cur']
+thumb_angles = ['R0', 'R1']
+thumb_current = ['R0_cur', 'R1_cur']
+DATA_TYPE = finger_angles + thumb_angles + finger_current + thumb_current
+# DATA_TYPE = ['L0', 'L1', 'R0', 'R1', 'L0_cur', 'L1_cur', 'R0_cur', 'R1_cur'] # All motor angles and current
+# DATA_TYPE = ['L0', 'L1', 'L0_cur', 'L1_cur'] # Finger motor angles and current
 
 # model parameters
 INPUT_DIM = len(DATA_TYPE)
