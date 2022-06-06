@@ -1,3 +1,6 @@
 [submodule "ddh_driver"]
     path = ddh_driver
     url = https://github.com/HKUST-RML/ddh_driver
+[submodule "script/instance_segmentation/Mask_RCNN"]
+	path = script/instance_segmentation/Mask_RCNN
+	url = https://github.com/matterport/Mask_RCNN.git
