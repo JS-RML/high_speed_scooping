@@ -370,3 +370,64 @@ class HighSpeedScooping:
             print("Error occurred:")
             print(err)
 
+    def bin_pick_init(self, object_2D_pose, thumb_offset = 0, finger_set=False):
+        ''' Initialize robot pose before scooping with the gripper setting above the object
+        Parameters:
+            object_2D_pose(tuple): (x_obj, y_obj, q_obj) object pose in x-y plane of ur10 base frame 
+                x_obj(m): x coordinate of object's center
+                y_obj(m): y coordinate of object's center
+                q_obj(degree): angle of thumb's penetration axis relative to x axis of ur10 base frame
+        Returns:
+        
+        '''
+        x_obj, y_obj, q_obj = object_2D_pose
+        
+        # ======set fingers position according to scooping model======
+        # compute F, T position in gripper frame
+        y_g_F = -(self.fg_dist - self.center_dist) * sin(radians(self.theta))
+        x_g_F = self.cont_dist + (self.fg_dist - self.center_dist) * cos(radians(self.theta))
+        P_g_F = np.array([x_g_F, y_g_F, 0])
+        y_g_T = (self.center_dist + self.tb_dist) * sin(radians(self.theta))
+        x_g_T = self.cont_dist - (self.center_dist + self.tb_dist) * cos(radians(self.theta))
+        P_g_T = np.array([x_g_T, y_g_T, 0])
+        P_g_T = P_g_T + [thumb_offset*sin(radians(self.theta)), -thumb_offset*cos(radians(self.theta)), 0]
+        # F, T target position in their motor frame
+        P_L_F = P_g_F - self.P_g_L
+        P_R_T = P_g_T - self.P_g_R
+        self.ddh.arm(pos_gain=self.fg_pre_stiff, BW=self.digits_spd, finger='L')
+        self.ddh.arm(pos_gain=self.tb_pre_stiff, BW=self.digits_spd, finger='R')
+        # self.ddh.set_stiffness(self.fg_pre_stiff, 'L')
+        # self.ddh.set_stiffness(self.tb_pre_stiff, 'R')
+        self.ddh.set_left_tip(tuple(P_L_F[:-1]))
+        self.ddh.set_right_tip(tuple(P_R_T[:-1]))
+        print("Setting finger:")
+        print(tuple(P_L_F[:-1]))
+        print("Setting thumb:")
+        print(tuple(P_R_T[:-1]))
+
+        if finger_set == False:
+            # ======set gripper pose according to object pose and tilt angle======
+            # F position in tool frame
+            P_t_F = np.matmul(self.T_t_g, np.append(P_g_F, 1))[:-1]
+            # set F as tcp
+            P_t_F = P_t_F / 1000
+            # self.ur.set_tcp(np.append(P_t_F, [0,0,0]))
+            # set gripper initial pose
+            # init_pose = m3d.Transform()
+            # init_pose.pos.x = x_obj + (self.fg_dist - self.obj_l/2) * cos(radians(q_obj)) / 1000
+            # init_pose.pos.y = y_obj + (self.fg_dist - self.obj_l/2) * sin(radians(q_obj)) / 1000
+            # init_pose.pos.z = self.grip_h
+            # init_pose.orient.rotate_xb(pi)
+            # init_pose.orient.rotate_zt(radians(90-q_obj))
+            # init_pose.orient.rotate_xt(radians(90-self.theta))
+            init_pose = m3d.Transform()
+            init_pose.pos = self.ur.get_pose().pos
+            init_pose.pos.z = self.grip_h
+            init_pose.orient.rotate_xb(pi)
+            init_pose.orient.rotate_zt(radians(90-q_obj))
+            init_pose.orient.rotate_xt(radians(90-self.theta))
+            print("Setting pose: ")
+            print(init_pose.pose_vector)
+            self.ur.set_pose(init_pose, self.init_vel, self.init_acc)
+        self.is_init = True
+
