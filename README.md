@@ -17,7 +17,7 @@ This repository contains the software implementation of **High-Speed Scooping** 
 </p>
 
 **Related Paper**
-- K. H. Mak, P. Xu, and J. Seo, "**High-Speed Scooping Manipulation through Stiffness Control and Direct-Drive Actuation**," submitted to *2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)* (under review).
+- K. H. Mak, P. Xu and J. Seo, "[High-Speed Scooping: An Implementation through Stiffness Control and Direct-Drive Actuation](https://ieeexplore.ieee.org/document/10160263)," in 2023 IEEE International Conference on Robotics and Automation (ICRA), 2023, pp. 10261-10267.
     - [Video attachment](https://drive.google.com/file/d/1us2uz7WQjy4Kop9_YLqqb70ZVLpDpTfv/view?usp=sharing)
 
 ## 2. Prerequisites
